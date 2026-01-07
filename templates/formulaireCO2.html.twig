@@ -1,0 +1,646 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+  {{ parent() }}
+  <link rel="stylesheet" href="{{ asset('css/formulaire.css') }}">
+{% endblock %}
+
+
+{% block body %}
+
+<div class="site-header text-center py-4">
+    <img 
+        src="{{ asset('images/logo-energreen.png') }}" 
+        alt="Energreen - Votre consommation en un clic"
+        class="site-logo"
+    >
+</div>
+
+<div class="container py-5 soft-wrap">
+
+  <div class="mb-4 soft-card p-4">
+    <h1 class="h3 mb-1 fw-bold">Calculateur d’empreinte carbone</h1>
+    <p class="mb-0 text-muted small">Remplissez les sections puis calculez pour obtenir un camembert par axe.</p>
+  </div>
+
+  <form action="{{ path('app_formulaire') }}" method="POST">
+
+    <div class="accordion" id="carbonAccordion">
+
+      {# ===================== LOGEMENT ===================== #}
+      <div class="accordion-item mb-3">
+        <h2 class="accordion-header" id="headingLogement">
+          <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseLogement" aria-expanded="true" aria-controls="collapseLogement">
+            Logement
+          </button>
+        </h2>
+        <div id="collapseLogement" class="accordion-collapse collapse show" aria-labelledby="headingLogement" data-bs-parent="#carbonAccordion">
+          <div class="accordion-body">
+            <div class="row g-3">
+
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">Quel est votre type de logement ?</label>
+                <select class="form-select" name="type_logement">
+                  <option value="1150">Maison individuelle</option>
+                  <option value="750">Appartement</option>
+                </select>
+              </div>
+
+              <div class="col-md-6">
+                <label for="surface" class="form-label fw-semibold">Surface de votre logement (m²)</label>
+                <input type="number" class="form-control" id="surface" name="surface" placeholder="Ex: 80" min="0">
+                <div class="form-text">Laissez vide si vous ne souhaitez pas compter le chauffage.</div>
+              </div>
+
+              <div class="col-12">
+                <label class="form-label fw-semibold">État de l'isolation / Construction</label>
+                <select class="form-select" name="isolation_etat">
+                  <option value="0.5">Récent / Très bien isolé (RT2012/2020)</option>
+                  <option value="1.0" selected>Année 2000 / Isolation moyenne</option>
+                  <option value="1.5">Ancien (Avant 1990) / Mal isolé</option>
+                  <option value="2.5">Passoire thermique (Non rénové)</option>
+                </select>
+              </div>
+
+              <div class="col-12">
+                <label class="form-label fw-semibold">Quelle est votre énergie de chauffage principale ?</label>
+                <select class="form-select" name="energie_principale">
+                  <option value="0.052">Électricité (Radiateur ou PAC)</option>
+                  <option value="0.227">Gaz naturel</option>
+                  <option value="0.030">Bois (Bûches ou granulés)</option>
+                  <option value="3.24">Fioul</option>
+                  <option value="0.110">Réseau de chaleur urbain</option>
+                </select>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">Production d'eau chaude</label>
+                <select class="form-select" name="eau_chaude">
+                  <option value="0">Aucune / Non renseigné</option>
+                  <option value="115">Électricité (Ballon d'eau chaude)</option>
+                  <option value="380">Gaz (Chaudière)</option>
+                  <option value="5">Solaire thermique</option>
+                </select>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">Type de cuisson</label>
+                <select class="form-select" name="cuisson">
+                  <option value="0">Non renseigné</option>
+                  <option value="25">Plaques Induction / Vitrocéramique</option>
+                  <option value="110">Plaques Gaz</option>
+                </select>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">Climatisation (Utilisation)</label>
+                <div class="input-group">
+                  <span class="input-group-text">Jours/an</span>
+                  <input type="number" class="form-control" name="clim_jours" placeholder="0" min="0">
+                </div>
+              </div>
+
+              <div class="col-md-6 d-flex align-items-center">
+                <div class="form-check mt-4">
+                  <input class="form-check-input" type="checkbox" id="piscine" name="piscine" value="800">
+                  <label class="form-check-label" for="piscine">Piscine chauffée</label>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {# ===================== NUMÉRIQUE ===================== #}
+      <div class="accordion-item mb-3">
+        <h2 class="accordion-header" id="headingNumerique">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseNumerique" aria-expanded="false" aria-controls="collapseNumerique">
+            Numérique
+          </button>
+        </h2>
+        <div id="collapseNumerique" class="accordion-collapse collapse" aria-labelledby="headingNumerique" data-bs-parent="#carbonAccordion">
+          <div class="accordion-body">
+
+            <h3 class="h6 fw-bold mb-2">Nouveaux équipements (achetés neufs cette année)</h3>
+            <p class="text-muted small mb-3">Indiquez la quantité pour chaque appareil acheté neuf au cours des 12 derniers mois.</p>
+
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">Smartphone</label>
+                <input type="number" class="form-control" name="qty_smartphone" value="0" min="0">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">Ordinateur portable</label>
+                <input type="number" class="form-control" name="qty_laptop" value="0" min="0">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">Ordinateur fixe + écran</label>
+                <input type="number" class="form-control" name="qty_desktop" value="0" min="0">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">Tablette</label>
+                <input type="number" class="form-control" name="qty_tablet" value="0" min="0">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">Téléviseur</label>
+                <input type="number" class="form-control" name="qty_tv" value="0" min="0">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">Montre / Console</label>
+                <input type="number" class="form-control" name="qty_gadget" value="0" min="0">
+              </div>
+            </div>
+
+            <div class="mt-3">
+              <label class="form-label fw-semibold">Durée de vie moyenne de vos équipements</label>
+              <select class="form-select" name="num_duree_vie">
+                <option value="1.2">Moins de 3 ans (Renouvellement rapide)</option>
+                <option value="1.0" selected>3 à 5 ans (Moyenne)</option>
+                <option value="0.7">Plus de 5 ans (Durable)</option>
+              </select>
+            </div>
+
+            <hr class="my-4">
+
+            <h3 class="h6 fw-bold mb-2">Usage et Streaming</h3>
+
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">Heures de streaming vidéo / jour</label>
+                <input type="number" class="form-control" name="heures_streaming" placeholder="Ex: 2" min="0">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">Réseau principalement utilisé</label>
+                <select class="form-select" name="reseau_type">
+                  <option value="0.004">Wi-Fi (Fibre/ADSL)</option>
+                  <option value="0.045">4G / 5G (Mobile)</option>
+                </select>
+              </div>
+              <div class="col-12">
+                <label class="form-label fw-semibold">Heures de jeux en ligne ou Cloud Gaming / semaine</label>
+                <input type="number" class="form-control" name="heures_gaming" placeholder="Ex: 5" min="0">
+              </div>
+            </div>
+
+            <hr class="my-4">
+
+            <h3 class="h6 fw-bold mb-2">Stockage et Box Internet</h3>
+
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">Stockage Cloud (Go) & Emails</label>
+                <select class="form-select" name="stockage_cloud">
+                  <option value="0.15">Léger (Gratuit &lt; 15 Go)</option>
+                  <option value="2.0">Moyen (200 Go)</option>
+                  <option value="20.0">Élevé (2 To ou +)</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">État de votre Box Internet</label>
+                <select class="form-select" name="box_internet">
+                  <option value="12.5">Laissée allumée 24h/24</option>
+                  <option value="7.8">Éteinte la nuit</option>
+                  <option value="0">Pas de Box (Partage de connexion)</option>
+                </select>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      {# ===================== ÉLECTROMÉNAGER ===================== #}
+      <div class="accordion-item mb-3">
+        <h2 class="accordion-header" id="headingElectro">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseElectro" aria-expanded="false" aria-controls="collapseElectro">
+            Électroménager
+          </button>
+        </h2>
+        <div id="collapseElectro" class="accordion-collapse collapse" aria-labelledby="headingElectro" data-bs-parent="#carbonAccordion">
+          <div class="accordion-body">
+
+            <h3 class="h6 fw-bold mb-2">Appareils de froid (achetés neufs cette année)</h3>
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">Réfrigérateur (1 porte)</label>
+                <input type="number" class="form-control" name="qty_refri" value="0" min="0">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">Réfrigérateur-Congélateur</label>
+                <input type="number" class="form-control" name="qty_combiné" value="0" min="0">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">Congélateur séparé</label>
+                <input type="number" class="form-control" name="qty_congel" value="0" min="0">
+              </div>
+            </div>
+
+            <hr class="my-4">
+
+            <h3 class="h6 fw-bold mb-2">Lavage et cuisson (achetés neufs cette année)</h3>
+            <div class="row g-3">
+              <div class="col-md-3">
+                <label class="form-label fw-semibold">Lave-linge</label>
+                <input type="number" class="form-control" name="qty_lave_linge" value="0" min="0">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label fw-semibold">Lave-vaisselle</label>
+                <input type="number" class="form-control" name="qty_lave_vaisselle" value="0" min="0">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label fw-semibold">Sèche-linge</label>
+                <input type="number" class="form-control" name="qty_seche_linge" value="0" min="0">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label fw-semibold">Four électrique</label>
+                <input type="number" class="form-control" name="qty_four" value="0" min="0">
+              </div>
+            </div>
+
+            <hr class="my-4">
+
+            <h3 class="h6 fw-bold mb-2">Petit électroménager</h3>
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">Micro-ondes</label>
+                <input type="number" class="form-control" name="qty_micro_ondes" value="0" min="0">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">Aspirateur</label>
+                <input type="number" class="form-control" name="qty_aspi" value="0" min="0">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">Machine à café</label>
+                <input type="number" class="form-control" name="qty_cafe" value="0" min="0">
+              </div>
+            </div>
+
+            <hr class="my-4">
+
+            <h3 class="h6 fw-bold mb-2">Durée de vie et maintenance</h3>
+
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Durée de vie moyenne de vos gros appareils</label>
+              <select class="form-select" name="electro_duree_vie">
+                <option value="1.5">Moins de 5 ans (Remplacement fréquent)</option>
+                <option value="1.0" selected>5 à 10 ans (Moyenne)</option>
+                <option value="0.7">Plus de 10 ans (Durable / Réparé)</option>
+              </select>
+            </div>
+
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="recharge_gaz" name="recharge_gaz" value="1200">
+              <label class="form-check-label" for="recharge_gaz">Rechargé le gaz d’une clim ou PAC cette année</label>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      {# ===================== ALIMENTATION ===================== #}
+      <div class="accordion-item mb-3">
+        <h2 class="accordion-header" id="headingAlim">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAlim" aria-expanded="false" aria-controls="collapseAlim">
+            Alimentation
+          </button>
+        </h2>
+        <div id="collapseAlim" class="accordion-collapse collapse" aria-labelledby="headingAlim" data-bs-parent="#carbonAccordion">
+          <div class="accordion-body">
+
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Régime alimentaire principal</label>
+              <select class="form-select" name="regime_alimentaire">
+                <option value="2100">Omnivore "classique"</option>
+                <option value="1550">Omnivore "flexible"</option>
+                <option value="1100">Végétarien</option>
+                <option value="780">Végétalien / Vegan</option>
+              </select>
+            </div>
+
+            <hr class="my-4">
+
+            <h3 class="h6 fw-bold mb-2">Consommation hebdomadaire</h3>
+            <p class="text-muted small mb-3">Combien de fois par semaine consommez-vous ces produits ?</p>
+
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">Viande rouge</label>
+                <select class="form-select" name="frequence_viande_rouge">
+                  <option value="0">0 fois</option>
+                  <option value="250">1 fois</option>
+                  <option value="500">2 fois</option>
+                  <option value="750">3 fois</option>
+                  <option value="1250">5 fois ou plus</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">Viande blanche / Poisson</label>
+                <select class="form-select" name="frequence_viande_blanche">
+                  <option value="0">0 fois</option>
+                  <option value="40">1 fois</option>
+                  <option value="80">2 fois</option>
+                  <option value="120">3 fois</option>
+                  <option value="200">5 fois ou plus</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-check mt-3">
+              <input class="form-check-input" type="checkbox" id="produits_laitiers" name="laitiers" value="182">
+              <label class="form-check-label" for="produits_laitiers">Produits laitiers à presque chaque repas</label>
+            </div>
+
+            <hr class="my-4">
+
+            <h3 class="h6 fw-bold mb-2">Origine et qualité</h3>
+
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">Fruits/légumes de saison</label>
+                <select class="form-select" name="coeff_saison">
+                  <option value="0.9">Toujours</option>
+                  <option value="1.0" selected>Souvent</option>
+                  <option value="1.15">Rarement</option>
+                  <option value="1.3">Jamais</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">Part de bio</label>
+                <select class="form-select" name="coeff_bio">
+                  <option value="0.95">Quasiment tout (&gt; 75%)</option>
+                  <option value="0.98">La moitié (50%)</option>
+                  <option value="1.0" selected>Un peu ou pas du tout</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">Importés par avion</label>
+                <select class="form-select" name="coeff_avion">
+                  <option value="1.0" selected>Jamais</option>
+                  <option value="1.05">Rarement</option>
+                  <option value="1.25">Régulièrement</option>
+                </select>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      {# ===================== TRANSPORTS ===================== #}
+      <div class="accordion-item mb-3">
+        <h2 class="accordion-header" id="headingTransports">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTransports" aria-expanded="false" aria-controls="collapseTransports">
+            Transports
+          </button>
+        </h2>
+        <div id="collapseTransports" class="accordion-collapse collapse" aria-labelledby="headingTransports" data-bs-parent="#carbonAccordion">
+          <div class="accordion-body">
+
+            <h3 class="h6 fw-bold mb-2">Voiture et deux-roues</h3>
+
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">Motorisation</label>
+                <select class="form-select" name="vehicule_moteur">
+                  <option value="0">Je n'ai pas de véhicule motorisé</option>
+                  <option value="0.218">Voiture Essence</option>
+                  <option value="0.214">Voiture Diesel</option>
+                  <option value="0.051">Voiture Électrique</option>
+                  <option value="0.155">Voiture Hybride</option>
+                  <option value="0.120">Moto / Scooter</option>
+                </select>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">Kilométrage annuel estimé (km)</label>
+                <input type="number" class="form-control" name="km_voiture" placeholder="Ex: 12000" min="0">
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">Taille du véhicule (si voiture)</label>
+                <select class="form-select" name="vehicule_taille">
+                  <option value="0.9">Citadine / Petite</option>
+                  <option value="1.0" selected>Berline / Moyenne</option>
+                  <option value="1.2">SUV / Familiale</option>
+                </select>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">Covoiturage régulier</label>
+                <select class="form-select" name="covoiturage">
+                  <option value="1">Seul</option>
+                  <option value="0.5">Souvent à deux</option>
+                  <option value="0.33">Covoiturage quotidien</option>
+                </select>
+              </div>
+            </div>
+
+            <hr class="my-4">
+
+            <h3 class="h6 fw-bold mb-2">Transports en commun</h3>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">Train (km / mois)</label>
+                <input type="number" class="form-control" name="km_train" placeholder="Ex: 200" min="0">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">Bus/Tram/Métro (trajets / semaine)</label>
+                <input type="number" class="form-control" name="trajets_bus" placeholder="Ex: 10" min="0">
+              </div>
+            </div>
+
+            <hr class="my-4">
+
+            <h3 class="h6 fw-bold mb-2">Avion (12 derniers mois)</h3>
+            <p class="text-muted small mb-3">Indiquez le nombre de trajets Aller-Retour.</p>
+
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">Court-courrier (&lt; 3h)</label>
+                <input type="number" class="form-control" name="vol_court" value="0" min="0">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">Moyen-courrier (3h-6h)</label>
+                <input type="number" class="form-control" name="vol_moyen" value="0" min="0">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">Long-courrier (&gt; 6h)</label>
+                <input type="number" class="form-control" name="vol_long" value="0" min="0">
+              </div>
+            </div>
+
+            <hr class="my-4">
+
+            <div>
+              <label class="form-label fw-semibold">Pour vos trajets courts, qu'utilisez-vous le plus ?</label>
+              <select class="form-select" name="mobilite_douce">
+                <option value="0">Marche ou Vélo</option>
+                <option value="0.002">Vélo électrique</option>
+                <option value="0.450">Voiture</option>
+              </select>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      {# ===================== TEXTILE ===================== #}
+      <div class="accordion-item mb-3">
+        <h2 class="accordion-header" id="headingTextile">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTextile" aria-expanded="false" aria-controls="collapseTextile">
+            Textile
+          </button>
+        </h2>
+        <div id="collapseTextile" class="accordion-collapse collapse" aria-labelledby="headingTextile" data-bs-parent="#carbonAccordion">
+          <div class="accordion-body">
+
+            <h3 class="h6 fw-bold mb-2">Achats neufs (12 derniers mois)</h3>
+            <p class="text-muted small mb-3">N'incluez pas les articles d'occasion ou les dons.</p>
+
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">Hauts légers</label>
+                <input type="number" class="form-control" name="qty_haut" value="0" min="0">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">Pantalons / Jeans</label>
+                <input type="number" class="form-control" name="qty_jean" value="0" min="0">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">Pulls / Vestes légères</label>
+                <input type="number" class="form-control" name="qty_pull" value="0" min="0">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">Manteaux lourds / Parkas</label>
+                <input type="number" class="form-control" name="qty_manteau" value="0" min="0">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">Chaussures (paires)</label>
+                <input type="number" class="form-control" name="qty_chaussures" value="0" min="0">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">Sous-vêtements / Accessoires</label>
+                <input type="number" class="form-control" name="qty_accessoire" value="0" min="0">
+              </div>
+            </div>
+
+            <hr class="my-4">
+
+            <h3 class="h6 fw-bold mb-2">Habitudes et matières</h3>
+
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">Habitude principale d'achat</label>
+                <select class="form-select" name="habitudes_habillement">
+                  <option value="0.2">Seconde main en priorité</option>
+                  <option value="0.8">Qualité et durabilité</option>
+                  <option value="1.0" selected>Standard</option>
+                  <option value="1.4">Fast-Fashion</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">Matières privilégiées</label>
+                <select class="form-select" name="matiere_textile">
+                  <option value="0.85">Bio ou recyclées</option>
+                  <option value="1.0" selected>Matières naturelles classiques</option>
+                  <option value="1.1">Synthétiques</option>
+                </select>
+              </div>
+            </div>
+
+            <hr class="my-4">
+
+            <h3 class="h6 fw-bold mb-2">Entretien</h3>
+
+            <div>
+              <label class="form-label fw-semibold">Comment lavez et séchez-vous vos vêtements ?</label>
+              <select class="form-select" name="entretien_textile">
+                <option value="2">Basse température et séchage air libre</option>
+                <option value="35">Haute température et usage du sèche-linge</option>
+              </select>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="mt-4 d-grid">
+      <button type="submit" class="btn-soft">
+        Calculer mon empreinte carbone
+      </button>
+    </div>
+
+  </form>
+
+  {# --- RÉSULTATS + CAMEMBERT --- #}
+  {% if results is defined and results %}
+    <div class="mt-5 soft-chart">
+      <h2 class="h4 mb-3 fw-bold">Résultats</h2>
+      <p class="mb-3"><strong>Total :</strong> {{ total }} kgCO₂e</p>
+
+      <div class="row g-4 align-items-center">
+        <div class="col-md-6">
+          <canvas id="carbonPie" height="280"></canvas>
+        </div>
+        <div class="col-md-6">
+          <ul class="mb-0">
+            {% for axe, valeur in results %}
+              <li><strong>{{ axe }}</strong> : {{ valeur }} kgCO₂e</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+      window.addEventListener('load', function () {
+        const labels = {{ results|keys|json_encode|raw }};
+        const values = [
+          {% for axe, valeur in results %}
+            {{ valeur }}{% if not loop.last %},{% endif %}
+          {% endfor %}
+        ];
+
+        const ctx = document.getElementById('carbonPie').getContext('2d');
+        new Chart(ctx, {
+          type: 'pie',
+          data: { labels, datasets: [{ data: values }] },
+          options: {
+            responsive: true,
+            plugins: {
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    const v = context.raw;
+                    const t = values.reduce((a,b) => a + b, 0);
+                    const pct = t ? (v / t * 100).toFixed(1) : 0;
+                    return `${context.label}: ${v} kgCO₂e (${pct}%)`;
+                  }
+                }
+              }
+            }
+          }
+        });
+      });
+    </script>
+  {% endif %}
+  <br>
+<footer>
+  <div>
+    <h5 class="mb-2">Méthodologie et Sources</h5>
+    <p class="mb-0 small">
+      Les calculs de ce formulaire sont effectués à partir des données de la <strong>Base Empreinte® v23</strong> de l'ADEME.
+      L'impact carbone inclut l'Analyse de Cycle de Vie (fabrication, transport, usage et fin de vie) pour les biens de consommation.
+      <br>
+      <a href="https://base-empreinte.ademe.fr/" target="_blank">Consulter la source officielle (ADEME)</a>.
+    </p>
+  </div>
+</footer>
+
+</div>
+
+{% endblock %}

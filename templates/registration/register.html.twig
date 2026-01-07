@@ -1,0 +1,148 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Inscription - ENERGREEN{% endblock %}
+
+{% block body %}
+<style>
+    /* Design ENERGREEN pour l'inscription */
+    body {
+        background-color: #f0f4f1;
+        font-family: 'Segoe UI', sans-serif;
+    }
+    .register-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 90vh;
+        padding: 20px;
+    }
+    .register-card {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 500px;
+        border-top: 5px solid #2e7d32;
+    }
+    .welcome-title {
+        color: #2e7d32;
+        text-align: center;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+    .subtitle {
+        text-align: center;
+        color: #666;
+        margin-bottom: 20px;
+        font-size: 0.9rem;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+    
+    input[type="email"],
+    input[type="text"],
+    select,
+    input[type="password"] {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        box-sizing: border-box;
+    }
+
+    .btn-register {
+        width: 100%;
+        background-color: #2e7d32;
+        color: white;
+        border: none;
+        padding: 14px;
+        border-radius: 6px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background 0.3s;
+        margin-top: 15px;
+        font-weight: bold;
+    }
+    .btn-register:hover {
+        background-color: #1b5e20;
+    }
+    .checkbox-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 10px;
+        font-size: 0.9rem;
+    }
+</style>
+
+<div class="register-container">
+    <div class="register-card">
+        <h1 class="welcome-title">Inscription ENERGREEN</h1>
+        <p class="subtitle">Rejoignez-nous pour protéger la planète !</p>
+
+        {{ form_errors(registrationForm) }}
+
+        {{ form_start(registrationForm) }}
+            <div class="form-group">
+                {{ form_row(registrationForm.email, {'attr': {'placeholder': 'votre@email.com'}}) }}
+            </div>
+
+            {# --- CHAMPS NOM & PRENOM --- #}
+            <div style="display: flex; gap: 15px;">
+                <div class="form-group" style="flex: 1;">
+                    {{ form_row(registrationForm.nom, {'attr': {'placeholder': 'Nom'}}) }}
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    {{ form_row(registrationForm.prenom, {'attr': {'placeholder': 'Prénom'}}) }}
+                </div>
+            </div>
+
+            {# --- CHAMP STATUT PRO --- #}
+            <div class="form-group">
+                {{ form_row(registrationForm.statut_pro) }}
+            </div>
+
+            <div class="form-group">
+                {{ form_row(registrationForm.plainPassword, {
+                    'label': 'Mot de passe',
+                    'attr': {
+                        'placeholder': 'Minimum 6 caractères',
+                        'id': 'pass_input'
+                    }
+                }) }}
+
+                <div class="checkbox-group" style="margin-top: 5px;">
+                    <input type="checkbox" id="toggle_pass">
+                    <label for="toggle_pass" style="font-size: 0.8rem; display: inline; font-weight: normal;">Afficher le mot de passe</label>
+                </div>
+            </div>
+
+            <div class="checkbox-group">
+                {{ form_widget(registrationForm.agreeTerms) }}
+                {{ form_label(registrationForm.agreeTerms, 'Accepter les conditions d\'utilisation') }}
+            </div>
+
+            <button type="submit" class="btn-register">Créer mon compte</button>
+        {{ form_end(registrationForm) }}
+
+        <p style="text-align: center; margin-top: 20px; font-size: 0.85rem;">
+            Déjà un compte ? <a href="{{ path('app_login') }}" style="color: #2e7d32; text-decoration: none; font-weight: bold;">Se connecter</a>
+        </p>
+    </div>
+</div>
+
+<script>
+    document.getElementById('toggle_pass').addEventListener('change', function() {
+        const passwordInput = document.getElementById('pass_input') 
+                              || document.querySelector('input[name*="plainPassword"]')
+                              || document.querySelector('input[type="password"]');
+        
+        if (passwordInput) {
+            passwordInput.type = this.checked ? 'text' : 'password';
+        }
+    });
+</script>
+{% endblock %}

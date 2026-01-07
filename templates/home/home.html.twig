@@ -1,0 +1,54 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}ecoverse{% endblock %}
+
+{% block body %}
+	<style>
+		.bg-energreen {
+			background-color: #1A361C !important;
+			color: white;
+		}
+		.btn-energreen {
+			background-color: #1A361C !important;
+			border-color: #1A361C !important;
+			color: white;
+		}
+		.btn-energreen:hover {
+			background-color: #142a15 !important;
+			border-color: #142a15 !important;
+			color: white;
+		}
+		.bg-form {
+			background-color: #493315 !important;
+			color: white;
+		}
+		.btn-form {
+			background-color: #493315 !important;
+			border-color: #493315 !important;
+			color: white;
+		}
+		.btn-form:hover {
+			background-color: #362612 !important;
+			border-color: #362612 !important;
+			color: white;
+		}
+	</style>
+
+	<nav class="navbar bg-energreen">
+		<div class="container-fluid justify-content-between">
+			<a class="navbar-brand" href="{{ path('app_energreen_welcome') }}" style="color: white">
+				<img src="{{ asset('icons/logo.png') }}" alt="Logo" width="150" height="40">
+			</a>
+			<a href="{{ path('app_logout') }}">Se deconnecter</a>
+		</div>
+	</nav>
+
+<div class="container mt-5">
+    <h1>ecoverse</h1>
+    <h4>Chaque geste compte</h4>
+    <p>ecoverse est un outil qui permet de calculer votre consommation d'énergie et de savoir combien de CO2 vous emettez.</p>
+</div>
+<div class="container mt-5">
+    <a class="btn btn-energreen" href="{{ path('app_energreen_welcome') }}">Energreen</a>
+{% endblock %} 
+ 

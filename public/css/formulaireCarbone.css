@@ -1,0 +1,275 @@
+:root {
+    --soft-bg: #ffffff;
+    --soft-white: #ffffff;
+    --soft-border: #111;
+    --soft-muted: #6c757d;
+    --soft-shadow: 0 8px 20px rgba(0, 0, 0, .06);
+}
+
+html,
+body {
+    background: var(--soft-bg) !important;
+}
+
+
+.soft-wrap {
+    max-width: 1300px;
+    margin: 0 auto;
+}
+
+
+.soft-card,
+.soft-chart,
+.soft-alert,
+.accordion-button,
+.accordion-body {
+    width: 100%;
+}
+
+.soft-card {
+    background: var(--soft-white);
+    border: 1px solid var(--soft-border);
+    border-radius: 18px;
+    box-shadow: var(--soft-shadow);
+}
+
+.accordion-item {
+    border: 0;
+    background: transparent;
+}
+
+.accordion-button {
+    background: var(--soft-white);
+    border: 1px solid var(--soft-border);
+    border-radius: 18px !important;
+    box-shadow: var(--soft-shadow);
+    padding: 1rem 1.1rem;
+    font-weight: 700;
+}
+
+.accordion-button:not(.collapsed) {
+    background: var(--soft-white);
+    color: #111;
+}
+
+.accordion-button:focus {
+    box-shadow: 0 0 0 3px rgba(17, 17, 17, .15);
+    border-color: var(--soft-border);
+}
+
+.accordion-body {
+    background: var(--soft-white);
+    border: 1px solid var(--soft-border);
+    border-top: 0;
+    border-radius: 0 0 18px 18px;
+    padding: 1.2rem;
+    box-shadow: var(--soft-shadow);
+}
+
+.form-control,
+.form-select,
+.input-group-text {
+    border: 1px solid var(--soft-border) !important;
+    border-radius: 14px !important;
+    padding: .75rem .9rem;
+    background: #fff;
+}
+
+.input-group .input-group-text {
+    background: #fff;
+}
+
+.form-text,
+.text-muted,
+.small {
+    color: var(--soft-muted) !important;
+}
+
+.form-check-input {
+    border: 1px solid var(--soft-border) !important;
+}
+
+.btn-soft {
+    border: 1px solid var(--soft-border);
+    border-radius: 16px;
+    padding: .9rem 1.1rem;
+    font-weight: 700;
+    background: #fff;
+    color: #111;
+    box-shadow: var(--soft-shadow);
+}
+
+.btn-soft:hover {
+    background: #f1f3f5;
+    color: #111;
+}
+
+.soft-alert {
+    background: #fff;
+    border: 1px solid var(--soft-border);
+    border-radius: 18px;
+    box-shadow: var(--soft-shadow);
+}
+
+.soft-chart {
+    background: #fff;
+    border: 1px solid var(--soft-border);
+    border-radius: 18px;
+    box-shadow: var(--soft-shadow);
+    padding: 1rem;
+}
+
+.soft-alert {
+    font-size: 0.85rem;
+    line-height: 1.45;
+}
+
+.soft-alert h5 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: .4rem;
+}
+
+.soft-alert p {
+    margin-bottom: 0;
+}
+
+.soft-alert a {
+    font-size: 0.85rem;
+}
+
+
+body {
+    font-family: 'Montserrat', sans-serif;
+    color: #111;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+.accordion-button {
+    font-family: 'Roboto', sans-serif;
+}
+
+
+.accordion-button {
+    background-color: #146919ff !important;
+    color: #ffffff !important;
+    border-color: #146919ff !important;
+}
+
+.accordion-button:not(.collapsed) {
+    background-color: #146919ff !important;
+    color: #ffffff !important;
+}
+
+.accordion-button::after {
+    filter: invert(1);
+    /* flèche blanche */
+}
+
+.accordion-body {
+    border-color: #1a361c !important;
+}
+
+.accordion-body label,
+.accordion-body .form-label,
+.accordion-body .fw-semibold {
+    color: #1a361c;
+}
+
+
+.btn-soft {
+    background-color: #1c4915ff !important;
+    color: #ffffff !important;
+    border-color: #1c4915ff !important;
+}
+
+.btn-soft:hover {
+    background-color: #3b280f !important;
+    border-color: #3b280f !important;
+    color: #ffffff !important;
+}
+
+
+.accordion-button,
+.accordion-button span,
+.accordion-button strong {
+    color: #ffffff !important;
+}
+
+
+.soft-chart h2,
+.soft-chart strong {
+    color: #1a361c;
+}
+
+
+.soft-chart {
+    padding: 2rem;
+}
+
+
+.soft-chart h2 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: #1a361c;
+}
+
+
+.soft-chart p {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    color: #111;
+}
+
+
+.soft-chart ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.soft-chart li {
+    font-size: 1.1rem;
+    margin-bottom: .6rem;
+    padding-left: 1rem;
+    position: relative;
+}
+
+.soft-chart li::before {
+    content: "●";
+    position: absolute;
+    left: 0;
+    color: #1a361c;
+    font-size: .9rem;
+}
+
+.site-header {
+    background: #ffffff;
+}
+
+.site-logo {
+    max-width: 320px;
+    width: 100%;
+    height: auto;
+    display: inline-block;
+}
+
+.btn-reset {
+    background: #ffffff;
+    color: #1a361c;
+    border: 2px solid #1a361c;
+    border-radius: 16px;
+    padding: .9rem 1.1rem;
+    font-weight: 700;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, .06);
+}
+
+.btn-reset:hover {
+    background: #f3f5f4;
+    color: #1a361c;
+}

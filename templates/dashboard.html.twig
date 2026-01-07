@@ -1,0 +1,335 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}EnerGreen - Tableau de bord
+{% endblock %}
+
+{% block stylesheets %}
+	<style>:root
+	{
+		--vert-energreen: #1a361c;
+		--marron-energreen: #493315;
+		--blanc: --gris-fond: #f4f7f6;
+
+	}
+
+	body {
+		font-family: 'Montserrat', sans-serif;
+		background-color: var(--gris-fond);
+		color: var(--vert-energreen);
+	}
+	h1,
+	h2 {
+		font-family: 'Roboto', sans-serif;
+		text-transform: uppercase;
+	}
+
+	/* Le conteneur qui force l'alignement sur une seule ligne */
+	.dashboard-row {
+		display: flex; /* Aligne les enfants horizontalement */
+		flex-direction: row;
+		gap: 20px; /* Espace entre les cartes */
+		margin-top: 20px;
+		align-items: stretch; /* Force la même hauteur pour toutes les cartes */
+	}
+
+	.card {
+		flex: 1; /* Chaque carte prend la même largeur */
+		background: var(--blanc);
+		border-radius: 10px;
+		padding: 20px;
+		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+		min-width: 0; /* Important pour éviter que les cartes ne débordent */
+	}
+
+	/* Style du Toggle Bar */
+	.toggle-bar {
+		background: #eee;
+		border-radius: 5px;
+		padding: 5px;
+		display: flex; /* Aligne Jour/Semaine/Mois sur une ligne */
+		gap: 10px;
+	}
+
+	.toggle-bar span {
+		padding: 5px 15px;
+		cursor: pointer;
+		border-radius: 3px;
+	}
+
+	.toggle-bar .active {
+		background: var(--marron-energreen);
+		color: white;
+	}
+
+
+	h1 {
+		color: #f4f7f6;
+	}
+	.dashboard-grid {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 20px;
+		padding: 20px;
+		max-width: 1200px;
+		margin: auto;
+	}
+
+	.card {
+		background: ;
+		border-radius: 10px;
+		padding: 20px;
+		box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+	}
+
+	/* Layout spécifique */
+	.span-2 {
+		grid-column: span 2;
+	}
+	.span-3 {
+		grid-column: span 3;
+	}
+
+	.header-banner {
+		border-bottom: 2px solid #eee;
+		margin-bottom: 20px;
+		padding: 10px 20px;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		background-color: #1a361c;
+	}
+
+	.btn-energreen {
+		background-color: var(--vert-energreen);
+		color: white;
+		padding: 10px 20px;
+		border-radius: 5px;
+		text-decoration: none;
+		font-weight: bold;
+	}
+
+	.toggle-bar {
+		background: #eee;
+		border-radius: 5px;
+		padding: 5px;
+		display: inline-block;
+	}
+	.toggle-bar span {
+		padding: 5px 10px;
+		cursor: pointer;
+		border-radius: 3px;
+	}
+	.toggle-bar .active {
+		background: var(--marron-energreen);
+		color: white;
+	}
+</style>{% endblock %}{% block body %}
+<header class="header-banner">
+	<h1>EnerGreen</h1>
+	<small>VOTRE CONSOMMATION EN UN CLIC</small>
+</header>
+
+{% for message in app.flashes('success') %}
+	<div class="alert alert-success alert-dismissible fade show mx-auto" role="alert" style="max-width: 1200px; margin-top: 20px;">
+		<strong>✓</strong>
+		{{ message }}
+		<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+	</div>
+{% endfor %}
+
+<div class="dashboard-grid">
+	<section class="card span-3" style="display: flex; justify-content: space-between; align-items: center; background: #f0f4f1;">
+		<div>
+			<h2>Gérer vos données</h2>
+			<p>Saisissez vos données de consommation.</p>
+		</div>
+		<a href="{{ path('app_energreen_welcome') }}" class="btn-energreen">Saisir vos données</a>
+	</section>
+
+	<section class="card span-2">
+		<div style="display: flex; justify-content: space-between;">
+			<div>
+				<h2>Historique de la consommation</h2>
+				<p>Aperçu de votre consommation et de son impact</p>
+			</div>
+			<div class="toggle-bar">
+				<span>Jour</span>
+				<span>Semaine</span>
+				<span class="active">Mois</span>
+			</div>
+		</div>
+		<div style="height: 250px; background: #fafafa; margin-top: 20px; border: 1px solid #eee; padding: 10px;">
+			<canvas id="consumptionChart"></canvas>
+		</div>
+	</section>
+
+	<section class="card">
+		<h2>Suggestions Personnalisées</h2>
+		<p style="margin-top: 20px; color: #666;">Optimisez votre chauffage pour réduire de 10% votre facture.</p>
+	</section>
+
+	<section class="card">
+		<h2>Impact Carbone</h2>
+		<ul style="list-style: none; padding: 0; margin-top: 10px;">
+			<li>🍃 Émissions de CO2 :
+				<strong>{{ co2_emissions }}
+					kg</strong>
+			</li>
+			<li>🌍 Empreinte carbone</li>
+		</ul>
+
+	</section>
+
+	<section class="card">
+		<h2>Coût et consommation</h2>
+		<div class="mt-3">
+			<div class="mb-3">
+				<span class="d-block text-muted small text-uppercase">Coût estimé</span>
+				<span class="h2 fw-bold text-success">{{ current_month_cost|number_format(2, ',', ' ') }}
+					€</span>
+			</div>
+			<div>
+				<span class="d-block text-muted small text-uppercase">Consommation estimée</span>
+				<span class="h4 fw-bold">{{ current_month_consumption }}
+					kWh</span>
+			</div>
+		</div>
+	</section>
+
+	<section class="card">
+		<h2>Alertes Intelligentes</h2>
+	</section>
+</div>{% endblock %}{% block javascripts %}
+{{ parent() }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+	document.addEventListener('DOMContentLoaded', function () {
+const ctx = document.getElementById('consumptionChart').getContext('2d');
+
+// Données simulées
+const dataJour = {
+labels: [
+'00h',
+'04h',
+'08h',
+'12h',
+'16h',
+'20h'
+],
+datasets: [
+{
+label: 'Consommation (kWh)',
+data: [
+0.5,
+0.4,
+1.2,
+2.5,
+1.8,
+3.0
+],
+backgroundColor: 'rgba(26, 54, 28, 0.2)',
+borderColor: '#1a361c',
+borderWidth: 2,
+tension: 0.4,
+fill: true
+}
+]
+};
+
+const dataSemaine = {
+labels: [
+'Lun',
+'Mar',
+'Mer',
+'Jeu',
+'Ven',
+'Sam',
+'Dim'
+],
+datasets: [
+{
+label: 'Consommation (kWh)',
+data: [
+12,
+14,
+11,
+15,
+18,
+22,
+19
+],
+backgroundColor: 'rgba(26, 54, 28, 0.2)',
+borderColor: '#1a361c',
+borderWidth: 2,
+tension: 0.4,
+fill: true
+}
+]
+};
+
+const dataMois = {
+labels: [
+'Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'
+],
+datasets: [
+{
+label: 'Consommation (kWh)',
+data: [
+85, 90, 78, 87
+],
+backgroundColor: 'rgba(26, 54, 28, 0.2)',
+borderColor: '#1a361c',
+borderWidth: 2,
+tension: 0.4,
+fill: true
+}
+]
+};
+
+let currentChart = new Chart(ctx, {
+type: 'line',
+data: dataMois, // Défaut : Mois
+options: {
+responsive: true,
+maintainAspectRatio: false,
+plugins: {
+legend: {
+display: false
+}
+},
+scales: {
+y: {
+beginAtZero: true,
+grid: {
+color: '#f0f0f0'
+}
+},
+x: {
+grid: {
+display: false
+}
+}
+}
+}
+});
+
+// Gestion des boutons
+const toggles = document.querySelectorAll('.toggle-bar span');
+toggles.forEach(toggle => {
+toggle.addEventListener('click', function () { // Update active class
+toggles.forEach(t => t.classList.remove('active'));
+this.classList.add('active');
+
+// Update chart data
+const period = this.textContent.trim();
+if (period === 'Jour') {
+currentChart.data = dataJour;
+} else if (period === 'Semaine') {
+currentChart.data = dataSemaine;
+} else {
+currentChart.data = dataMois;
+} currentChart.update();
+});
+});
+});
+</script>{% endblock %}

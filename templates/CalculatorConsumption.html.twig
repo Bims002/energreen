@@ -1,0 +1,183 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Consommation électrique
+{% endblock %}
+
+{% block body %}
+	<style>
+		.bg-energreen {
+			background-color: #1A361C !important;
+			color: white;
+		}
+		.btn-energreen {
+			background-color: #1A361C !important;
+			border-color: #1A361C !important;
+			color: white;
+		}
+		.btn-energreen:hover {
+			background-color: #142a15 !important;
+			border-color: #142a15 !important;
+		}
+		.bg-form {
+			background-color: #493315 !important;
+			color: white;
+		}
+		.btn-form {
+			background-color: #493315 !important;
+			border-color: #493315 !important;
+			color: white;
+		}
+		.btn-form:hover {
+			background-color: #362612 !important;
+			border-color: #362612 !important;
+			color: white;
+		}
+	</style>
+
+	<nav class="navbar bg-energreen">
+		<div class="container-fluid justify-content-center">
+			<a class="navbar-brand" href="{{ path('app_energreen_welcome') }}" style="color: white">
+				<img src="{{ asset('icons/logo.png') }}" alt="Logo" width="150" height="40">
+			</a>
+		</div>
+	</nav>
+
+	<div class="container mt-5">
+		<div class="row justify-content-center">
+			<div class="col-md-8">
+				<div class="card shadow-lg border-0 rounded-lg">
+					<div class="card-header bg-form text-white text-center py-4">
+						<h2 class="mb-0">Calculer votre consommation électrique</h2>
+					</div>
+					<div class="card-body p-5">
+						<div class="text-center mb-4">
+							<p class="lead text-muted">Votre consommation électrique est calculée en un clic.</p>
+						</div>
+
+						<div class="row">
+							<div class="col p-4">
+								<h2 class="mb-0">Comment utilisez-vous vos appareils ?</h2>
+								<p class="text-muted pt-4">Merci de nous donner plus de détails sur votre utilisation de vos appareils.</p>
+							</div>
+							<div class="col p-4">
+								<form id="calcForm" onsubmit="event.preventDefault(); calculateConsumption();">
+									{% for app in appliances %}
+										<div class="mb-4 appliance-row border-bottom pb-3">
+											<label class="form-label fw-bold">{{ app.name }}</label>
+											<div class="row g-2 align-items-center">
+												{% if app.mode == 'cycles_week' %}
+													<div
+														class="col-5">
+														<label class="small text-muted mb-0">Puissance en Watts (W)</label>
+														<input type="number" step="1" class="form-control form-control-sm power-input" placeholder="W" data-default-power="{{ app.power }}" min="1">
+													</div>
+													<div class="col-5">
+														<label class="small text-muted mb-0">Cycles/semaine</label>
+														<input type="number" step="0.5" class="form-control form-control-sm hours-input" placeholder="Cycles" data-default-hours="{{ app.usage }}" data-cycle-duration="{{ app.duration|default(0.5) }}" min="1">
+														<input type="hidden" class="mode-input" value="cycles_week">
+													</div>
+												{% else %}
+													<div class="col-5">
+														<input type="number" step="0.01" class="form-control form-control-sm power-input" placeholder="W" data-default-power="{{ app.power }}" min="1">
+													</div>
+													<div class="col-5">
+														<input type="number" step="0.01" class="form-control form-control-sm hours-input" placeholder="H/j" data-default-hours="{{ app.usage }}" min="0" max="24">
+														<input type="hidden" class="mode-input" value="hours_day">
+													</div>
+												{% endif %}
+												<div class="col-2 text-end">
+													<small class="fw-bold result-span text-muted">-</small>
+												</div>
+											</div>
+										</div>
+									{% else %}
+										<!-- Solution de repli pour les entrées génériques -->
+										<div class="mb-4 appliance-row border-bottom pb-3">
+											<input type="text" class="form-control mb-2" placeholder="Nom de l'appareil" required>
+											<div class="row g-2 align-items-center">
+												<div class="col-5">
+													<input type="number" step="0.01" class="form-control form-control-sm power-input" placeholder="W" required min="1">
+												</div>
+												<div class="col-5">
+													<input type="number" step="0.01" class="form-control form-control-sm hours-input" placeholder="H/j" required min="0" max="24">
+													<input type="hidden" class="mode-input" value="hours_day">
+												</div>
+												<div class="col-2 text-end">
+													<small class="fw-bold result-span text-muted">-</small>
+												</div>
+											</div>
+										</div>
+									{% endfor %}
+
+									<div class="mt-4">
+										<div class="d-flex justify-content-between mb-3 align-items-center">
+											<span>Total Consommation Mensuelle :</span>
+											<span class="h5 mb-0 fw-bold text-success" id="total-consumption">-</span>
+										</div>
+										<div class="d-grid gap-2">
+											<button type="submit" class="btn btn-form btn-sm">Calculer</button>
+											<a href="{{ path('app_energreen_welcome') }}" class="btn btn-outline-secondary btn-sm">Retour</a>
+										</div>
+									</div>
+								</form>
+							</div>
+						</div>
+
+
+					</div>
+					
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script>
+		function calculateConsumption() {
+			const rows = document.querySelectorAll('.appliance-row');
+			let totalDailyKwh = 0; // Interprété comme contribution mensuelle dans la boucle
+			let totalMonthly = 0;
+
+			rows.forEach(row => {
+			const powerInput = row.querySelector('.power-input');
+			const hoursInput = row.querySelector('.hours-input');
+			const modeInput = row.querySelector('.mode-input');
+			const resultSpan = row.querySelector('.result-span');
+
+			if (powerInput && hoursInput) {
+			let power = parseFloat(powerInput.value);
+			let hours = parseFloat(hoursInput.value);
+			// Ou cycles
+
+			// Valeurs par défaut
+			if (isNaN(power) && powerInput.dataset.defaultPower) {
+			power = parseFloat(powerInput.dataset.defaultPower);
+			}
+			if (isNaN(hours) && hoursInput.dataset.defaultHours) {
+			hours = parseFloat(hoursInput.dataset.defaultHours);
+			}
+
+			power = power || 0;
+			hours = hours || 0;
+
+			let kwh = 0;
+			const mode = modeInput ? modeInput.value : 'hours_day';
+
+			if (mode === 'cycles_week') { // Mensuel = (Puissance(W) * Durée(H) * CyclesParSemaine * 4.33) / 1000
+			const duration = parseFloat(hoursInput.dataset.cycleDuration) || 0.5; // Par défaut si manquant
+			kwh = (power * duration * hours * 4.33) / 1000;
+			} else {
+				// Standard : W * H/jour
+				// Mensuel = (W * H * 30) / 1000
+				kwh = (power * hours * 30) / 1000;
+				} resultSpan.textContent = kwh.toFixed(2);
+				totalMonthly += kwh;
+				}
+			});
+
+			// Ajouter silencieusement la consommation standard en veille (18 kWh/mois)
+			totalMonthly += 18;
+
+			document.getElementById('total-consumption').textContent = totalMonthly.toFixed(2) + ' kWh';
+		}
+	</script>
+{% endblock %}
