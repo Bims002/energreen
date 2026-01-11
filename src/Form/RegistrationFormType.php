@@ -13,15 +13,40 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\IsTrue;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Email; // Added this import
 
 class RegistrationFormType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('email', TextType::class)
-            ->add('nom', TextType::class)
+            ->add('email', TextType::class, [
+                'label' => 'Email',
+                'constraints' => [
+                    new NotBlank([
+                        'message' => 'L\'email est obligatoire',
+                    ]),
+                    new \Symfony\Component\Validator\Constraints\Email([
+                        'message' => 'Veuillez entrer un email valide',
+                    ]),
+                ],
+            ])
+            ->add('nom', TextType::class, [
+                'label' => 'Nom',
+                'constraints' => [
+                    new NotBlank([
+                        'message' => 'Le nom est obligatoire',
+                    ]),
+                    new Length([
+                        'min' => 2,
+                        'max' => 50,
+                        'minMessage' => 'Le nom doit faire au moins {{ limit }} caractères',
+                        'maxMessage' => 'Le nom ne peut pas dépasser {{ limit }} caractères',
+                    ]),
+                ],
+            ])
             ->add('prenom', TextType::class, [
+                'label' => 'Prénom',
                 'required' => false
             ])
             ->add('statut_pro', ChoiceType::class, [

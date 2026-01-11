@@ -5,7 +5,11 @@ security:
 
     # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
     providers:
-        users_in_memory: { memory: null }
+        # ✅ Provider qui utilise la base de données
+        app_user_provider:
+            entity:
+                class: App\Entity\User
+                property: email
 
     firewalls:
         dev:
@@ -14,18 +18,36 @@ security:
             security: false
         main:
             lazy: true
-            provider: users_in_memory
-
-            # Activate different ways to authenticate:
-            # https://symfony.com/doc/current/security.html#the-firewall
+            provider: app_user_provider  # ✅ Utiliser le provider de la base de données
+            
+            # ✅ Configuration du formulaire de login
+            form_login:
+                login_path: app_login              # Route vers la page de login
+                check_path: app_login              # Route qui vérifie les identifiants
+                enable_csrf: true                  # Protection CSRF activée
+                default_target_path: app_dashboard # Redirection après login réussi
+                
+            # ✅ Configuration de la déconnexion
+            logout:
+                path: app_logout                   # Route pour se déconnecter
+                target: app_home                   # Redirection après logout
 
             # https://symfony.com/doc/current/security/impersonating_user.html
             # switch_user: true
 
     # Note: Only the *first* matching rule is applied
     access_control:
-        # - { path: ^/admin, roles: ROLE_ADMIN }
-        # - { path: ^/profile, roles: ROLE_USER }
+        # Pages publiques (accessibles sans connexion)
+        - { path: ^/login, roles: PUBLIC_ACCESS }
+        - { path: ^/register, roles: PUBLIC_ACCESS }
+        - { path: ^/$, roles: PUBLIC_ACCESS }
+        
+        # Pages privées (nécessitent d'être connecté)
+        - { path: ^/dashboard, roles: ROLE_USER }
+        - { path: ^/profil, roles: ROLE_USER }
+        - { path: ^/welcome, roles: ROLE_USER }
+        - { path: ^/calculator, roles: ROLE_USER }
+        - { path: ^/formulaire, roles: ROLE_USER }
 
 when@test:
     security:
