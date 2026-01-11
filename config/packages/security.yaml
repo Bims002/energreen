@@ -25,8 +25,17 @@ security:
 
     # Note: Only the *first* matching rule is applied
     access_control:
-        # - { path: ^/admin, roles: ROLE_ADMIN }
-        # - { path: ^/profile, roles: ROLE_USER }
+        # Pages publiques (accessibles sans connexion)
+        - { path: ^/login, roles: PUBLIC_ACCESS }
+        - { path: ^/register, roles: PUBLIC_ACCESS }
+        - { path: ^/$, roles: PUBLIC_ACCESS }
+        
+        # Pages privées (nécessitent d'être connecté)
+        - { path: ^/dashboard, roles: ROLE_USER }
+        - { path: ^/profil, roles: ROLE_USER }
+        - { path: ^/welcome, roles: ROLE_USER }
+        - { path: ^/calculator, roles: ROLE_USER }
+        - { path: ^/formulaire, roles: ROLE_USER }
 
 when@test:
     security:

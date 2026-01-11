@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller\Energreen;
+namespace App\Controller;
 
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
