@@ -1,0 +1,23 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Erreur serveur - 500{% endblock %}
+
+{% block body %}
+<div style="min-height: 80vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #f0f4f1 0%, #e8f0eb 100%);">
+    <div style="text-align: center; padding: 40px; background: white; border-radius: 20px; box-shadow: 0 10px 40px rgba(26, 54, 28, 0.15); max-width: 600px; width: 100%; margin: 20px;">
+        <div style="font-size: 120px; color: #dc3545; margin-bottom: 20px;">500</div>
+        <h1 style="color: #1a361c; font-size: 2rem; margin-bottom: 15px; font-weight: 700;">Erreur serveur</h1>
+        <p style="color: #666; font-size: 1.1rem; margin-bottom: 30px;">
+            Une erreur interne s'est produite. Notre équipe technique a été informée et travaille à la résolution du problème.
+        </p>
+        <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+            <a href="{{ path('app_dashboard') }}" style="background: linear-gradient(135deg, #1a361c 0%, #142a15 100%); color: white; padding: 14px 30px; border-radius: 10px; text-decoration: none; font-weight: 600; display: inline-block; transition: transform 0.3s;">
+                Retour au tableau de bord
+            </a>
+            <button onclick="window.location.reload();" style="background: white; color: #1a361c; padding: 14px 30px; border: 2px solid #1a361c; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.3s;">
+                Réessayer
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}

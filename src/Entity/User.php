@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
@@ -47,9 +49,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $created_at = null;
 
+    #[ORM\OneToMany(targetEntity: Lodgment::class, mappedBy: 'user', orphanRemoval: true)]
+    private Collection $lodgments;
+
+    #[ORM\OneToMany(targetEntity: Consumption::class, mappedBy: 'user', orphanRemoval: true)]
+    private Collection $consumptions;
+
     public function __construct()
     {
         $this->created_at = new \DateTime();
+        $this->lodgments = new ArrayCollection();
+        $this->consumptions = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -143,6 +153,66 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setCreatedAt(\DateTimeInterface $created_at): static
     {
         $this->created_at = $created_at;
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Lodgment>
+     */
+    public function getLodgments(): Collection
+    {
+        return $this->lodgments;
+    }
+
+    public function addLodgment(Lodgment $lodgment): static
+    {
+        if (!$this->lodgments->contains($lodgment)) {
+            $this->lodgments->add($lodgment);
+            $lodgment->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeLodgment(Lodgment $lodgment): static
+    {
+        if ($this->lodgments->removeElement($lodgment)) {
+            // set the owning side to null (unless already changed)
+            if ($lodgment->getUser() === $this) {
+                $lodgment->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Consumption>
+     */
+    public function getConsumptions(): Collection
+    {
+        return $this->consumptions;
+    }
+
+    public function addConsumption(Consumption $consumption): static
+    {
+        if (!$this->consumptions->contains($consumption)) {
+            $this->consumptions->add($consumption);
+            $consumption->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeConsumption(Consumption $consumption): static
+    {
+        if ($this->consumptions->removeElement($consumption)) {
+            // set the owning side to null (unless already changed)
+            if ($consumption->getUser() === $this) {
+                $consumption->setUser(null);
+            }
+        }
+
         return $this;
     }
 }

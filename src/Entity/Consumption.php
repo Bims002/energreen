@@ -20,7 +20,7 @@ class Consumption
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: false)]
     private ?\DateTime $billing_date = null;
 
-    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'consumptions')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
 

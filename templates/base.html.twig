@@ -1,30 +1,62 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="UTF-8">
-        <title>{% block title %}Bienvenue !{% endblock %}</title>
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚡</text></svg>">
-       
-                {# Lien vers Bootstrap si tu l'utilises #}
-                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-                <link rel="stylesheet" href="{{ asset('css/formulaireCarbone.css') }}">
-                <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
-        {% block stylesheets %}
-        {% endblock %}
-    </head>
-    <body>
-        {% block body %}{% endblock %}
-        
-        
-        {% block javascripts %}
-            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+	<head>
+		<meta charset="UTF-8">
+		<title>
+			{% block title %}Bienvenue !
+			{% endblock %}
+		</title>
+		<link
+		rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚡</text></svg>">
 
+		{# Lien vers Bootstrap si tu l'utilises #}
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+		<link rel="stylesheet" href="{{ asset('css/formulaireCarbone.css') }}">
+		<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&family=Montserrat:wght@400;700&display=swap" rel="stylesheet"> {% block stylesheets %}{% endblock %}
+		</head>
+		<body>
+			{# Barre de navigation #}
+			<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+				<div class="container-fluid">
+					<a class="navbar-brand" href="#">Energreen</a>
 
-            <div class="card-footer text-center py-3 bg-light">
-				<small class="text-muted">Fait avec
-				<span style="color: #e14646ff;">&hearts;</span>
-				 Energreen - 2026.</small>
+					<div class="d-flex">
+						{% if app.user and app.request.attributes.get('_route') != 'app_login' %}
+							{# Si l'utilisateur est connecté et qu'on n'est pas sur la page de connexion, on affiche son prénom et le bouton retour #}
+							<span class="navbar-text me-3 text-white">
+								Connecté en tant que :
+								{{ app.user.prenom ?? app.user.nom ?? app.user.userIdentifier }}
+							</span>
+							<button type="button" onclick="window.history.back();" class="btn btn-outline-danger">Retour</button>
+						{% else %}
+							{# Sinon, on affiche le bouton connexion #}
+							<a href="{{ path('app_login') }}" class="btn btn-outline-success">Se connecter</a>
+						{% endif %}
+					</div>
+				</div>
+			</nav>
+
+			{# Contenu principal des autres pages #}
+			<div class="container"> {% block body %}{% endblock %}
+				</div>
+
+			{# Footer #}
+			<div class="card-footer text-center py-3 bg-light mt-5">
+				<div class="d-flex flex-column align-items-center gap-2">
+					<small class="text-muted">Fait avec
+						<span style="color: #e14646ff;">&hearts;</span>
+						Energreen - 2026.</small>
+					{% if app.user %}
+						<form method="post" action="{{ path('app_logout') }}" style="display: inline;">
+							<input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}"/>
+							<button type="submit" class="btn btn-outline-danger btn-sm">Se déconnecter</button>
+						</form>
+					{% endif %}
+				</div>
 			</div>
-        {% endblock %}
-    </body>
-</html>
+
+				{% block javascripts %}
+					<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+				{% endblock %}
+			</body>
+		</html>

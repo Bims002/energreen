@@ -1,0 +1,23 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Page introuvable - 404{% endblock %}
+
+{% block body %}
+<div style="min-height: 80vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #f0f4f1 0%, #e8f0eb 100%);">
+    <div style="text-align: center; padding: 40px; background: white; border-radius: 20px; box-shadow: 0 10px 40px rgba(26, 54, 28, 0.15); max-width: 600px; width: 100%; margin: 20px;">
+        <div style="font-size: 120px; color: #1a361c; margin-bottom: 20px;">404</div>
+        <h1 style="color: #1a361c; font-size: 2rem; margin-bottom: 15px; font-weight: 700;">Page introuvable</h1>
+        <p style="color: #666; font-size: 1.1rem; margin-bottom: 30px;">
+            La page que vous recherchez n'existe pas ou a été déplacée.
+        </p>
+        <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+            <a href="{{ path('app_dashboard') }}" style="background: linear-gradient(135deg, #1a361c 0%, #142a15 100%); color: white; padding: 14px 30px; border-radius: 10px; text-decoration: none; font-weight: 600; display: inline-block; transition: transform 0.3s;">
+                Retour au tableau de bord
+            </a>
+            <button onclick="window.history.back();" style="background: white; color: #1a361c; padding: 14px 30px; border: 2px solid #1a361c; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.3s;">
+                Page précédente
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
