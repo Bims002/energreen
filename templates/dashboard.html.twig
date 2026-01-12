@@ -1,335 +1,287 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}EnerGreen - Tableau de bord
-{% endblock %}
+{% block title %}EnerGreen - Tableau de bord{% endblock %}
 
 {% block stylesheets %}
-	<style>:root
-	{
-		--vert-energreen: #1a361c;
-		--marron-energreen: #493315;
-		--blanc: --gris-fond: #f4f7f6;
+<style>
+    :root {
+        --vert-energreen: #1a361c;
+        --marron-energreen: #493315;
+        --gris-fond: #f4f7f6;
+        --blanc: #ffffff;
+    }
 
-	}
+    body {
+        font-family: 'Montserrat', sans-serif;
+        background-color: var(--gris-fond);
+        color: var(--vert-energreen);
+    }
 
-	body {
-		font-family: 'Montserrat', sans-serif;
-		background-color: var(--gris-fond);
-		color: var(--vert-energreen);
-	}
-	h1,
-	h2 {
-		font-family: 'Roboto', sans-serif;
-		text-transform: uppercase;
-	}
+    h1, h2 {
+        font-family: 'Roboto', sans-serif;
+        text-transform: uppercase;
+    }
 
-	/* Le conteneur qui force l'alignement sur une seule ligne */
-	.dashboard-row {
-		display: flex; /* Aligne les enfants horizontalement */
-		flex-direction: row;
-		gap: 20px; /* Espace entre les cartes */
-		margin-top: 20px;
-		align-items: stretch; /* Force la même hauteur pour toutes les cartes */
-	}
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+        padding: 20px;
+        max-width: 1200px;
+        margin: auto;
+    }
 
-	.card {
-		flex: 1; /* Chaque carte prend la même largeur */
-		background: var(--blanc);
-		border-radius: 10px;
-		padding: 20px;
-		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-		min-width: 0; /* Important pour éviter que les cartes ne débordent */
-	}
+    .card {
+        background: var(--blanc);
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
 
-	/* Style du Toggle Bar */
-	.toggle-bar {
-		background: #eee;
-		border-radius: 5px;
-		padding: 5px;
-		display: flex; /* Aligne Jour/Semaine/Mois sur une ligne */
-		gap: 10px;
-	}
+    .span-2 { grid-column: span 2; }
+    .span-3 { grid-column: span 3; }
 
-	.toggle-bar span {
-		padding: 5px 15px;
-		cursor: pointer;
-		border-radius: 3px;
-	}
+    .header-banner {
+        border-bottom: 2px solid #eee;
+        margin-bottom: 20px;
+        padding: 10px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: var(--vert-energreen);
+    }
 
-	.toggle-bar .active {
-		background: var(--marron-energreen);
-		color: white;
-	}
+    h1 { color: #f4f7f6; }
 
+    .btn-energreen {
+        background-color: var(--vert-energreen);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 5px;
+        text-decoration: none;
+        font-weight: bold;
+    }
 
-	h1 {
-		color: #f4f7f6;
-	}
-	.dashboard-grid {
-		display: grid;
-		grid-template-columns: repeat(3, 1fr);
-		gap: 20px;
-		padding: 20px;
-		max-width: 1200px;
-		margin: auto;
-	}
+    .toggle-bar {
+        background: #eee;
+        border-radius: 5px;
+        padding: 5px;
+        display: inline-block;
+    }
 
-	.card {
-		background: ;
-		border-radius: 10px;
-		padding: 20px;
-		box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-	}
+    .toggle-bar span {
+        padding: 5px 15px;
+        cursor: pointer;
+        border-radius: 3px;
+    }
 
-	/* Layout spécifique */
-	.span-2 {
-		grid-column: span 2;
-	}
-	.span-3 {
-		grid-column: span 3;
-	}
+    .toggle-bar .active {
+        background: var(--marron-energreen);
+        color: white;
+    }
+</style>
+{% endblock %}
 
-	.header-banner {
-		border-bottom: 2px solid #eee;
-		margin-bottom: 20px;
-		padding: 10px 20px;
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		background-color: #1a361c;
-	}
-
-	.btn-energreen {
-		background-color: var(--vert-energreen);
-		color: white;
-		padding: 10px 20px;
-		border-radius: 5px;
-		text-decoration: none;
-		font-weight: bold;
-	}
-
-	.toggle-bar {
-		background: #eee;
-		border-radius: 5px;
-		padding: 5px;
-		display: inline-block;
-	}
-	.toggle-bar span {
-		padding: 5px 10px;
-		cursor: pointer;
-		border-radius: 3px;
-	}
-	.toggle-bar .active {
-		background: var(--marron-energreen);
-		color: white;
-	}
-</style>{% endblock %}{% block body %}
+{% block body %}
 <header class="header-banner">
-	<h1>EnerGreen</h1>
-	<small>VOTRE CONSOMMATION EN UN CLIC</small>
+    <h1>EnerGreen</h1>
+    <small style="color: white;">VOTRE CONSOMMATION EN UN CLIC</small>
 </header>
 
 {% for message in app.flashes('success') %}
-	<div class="alert alert-success alert-dismissible fade show mx-auto" role="alert" style="max-width: 1200px; margin-top: 20px;">
-		<strong>✓</strong>
-		{{ message }}
-		<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-	</div>
+    <div class="alert alert-success alert-dismissible fade show mx-auto" role="alert" style="max-width: 1200px; margin-top: 20px;">
+        <strong>✓</strong> {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
 {% endfor %}
 
 <div class="dashboard-grid">
-	<section class="card span-3" style="display: flex; justify-content: space-between; align-items: center; background: #f0f4f1;">
-		<div>
-			<h2>Gérer vos données</h2>
-			<p>Saisissez vos données de consommation.</p>
-		</div>
-		<a href="{{ path('app_energreen_welcome') }}" class="btn-energreen">Saisir vos données</a>
-	</section>
+    {# Section Gérer les données #}
+    <section class="card span-3" style="display: flex; justify-content: space-between; align-items: center; background: #f0f4f1;">
+        <div>
+            <h2>Gérer vos données</h2>
+            <p>Saisissez vos données de consommation.</p>
+        </div>
+        <a href="{{ path('app_energreen_welcome') }}" class="btn-energreen">Saisir vos données</a>
+    </section>
 
-	<section class="card span-2">
-		<div style="display: flex; justify-content: space-between;">
-			<div>
-				<h2>Historique de la consommation</h2>
-				<p>Aperçu de votre consommation et de son impact</p>
-			</div>
-			<div class="toggle-bar">
-				<span>Jour</span>
-				<span>Semaine</span>
-				<span class="active">Mois</span>
-			</div>
-		</div>
-		<div style="height: 250px; background: #fafafa; margin-top: 20px; border: 1px solid #eee; padding: 10px;">
-			<canvas id="consumptionChart"></canvas>
-		</div>
-	</section>
+    {# Graphique Consommation Électrique #}
+    <section class="card span-2">
+        <div style="display: flex; justify-content: space-between;">
+            <div>
+                <h2>Historique de la consommation</h2>
+                <p>Aperçu de votre consommation électrique</p>
+            </div>
+            <div class="toggle-bar">
+                <span>Jour</span>
+                <span>Semaine</span>
+                <span class="active">Mois</span>
+            </div>
+        </div>
+        <div style="height: 250px; background: #fafafa; margin-top: 20px; border: 1px solid #eee; padding: 10px;">
+            <canvas id="consumptionChart"></canvas>
+        </div>
+    </section>
 
-	<section class="card">
-		<h2>Suggestions Personnalisées</h2>
-		<p style="margin-top: 20px; color: #666;">Optimisez votre chauffage pour réduire de 10% votre facture.</p>
-	</section>
+    {# Suggestions #}
+    <section class="card">
+        <h2>Suggestions Personnalisées</h2>
+        <p style="margin-top: 20px; color: #666;">Optimisez votre chauffage pour réduire de 10% votre facture.</p>
+    </section>
 
-	<section class="card">
-		<h2>Impact Carbone</h2>
-		<ul style="list-style: none; padding: 0; margin-top: 10px;">
-			<li>🍃 Émissions de CO2 :
-				<strong>{{ co2_emissions }}
-					kg</strong>
-			</li>
-			<li>🌍 Empreinte carbone</li>
-		</ul>
+    {# NOUVELLE SECTION : IMPACT CARBONE GLOBAL (CAMEMBERT) #}
+    <section class="card">
+        <h2>Impact Carbone Global</h2>
+        {% if latest_bilan %}
+            <div style="height: 200px; margin: 20px 0;">
+                <canvas id="impactChart"></canvas>
+            </div>
+            <ul style="list-style: none; padding: 0; margin-top: 10px; font-size: 0.9em;">
+                <li style="border-bottom: 1px solid #eee; padding: 5px 0;">
+                    <strong>Total : {{ latest_bilan.total|number_format(0, ',', ' ') }} kg CO2/an</strong>
+                </li>
+                <li style="padding: 5px 0; color: #666;">
+                    <small>Dernier calcul le {{ latest_bilan.createdAt|date('d/m/Y') }}</small>
+                </li>
+            </ul>
+        {% else %}
+            <div style="text-align: center; padding: 20px;">
+                <p>Aucun bilan complet trouvé.</p>
+                <a href="{{ path('app_formulaire') }}" class="btn-energreen" style="font-size: 0.8em;">Calculer mon empreinte</a>
+            </div>
+        {% endif %}
+    </section>
 
-	</section>
+    {# Coût et Consommation #}
+    <section class="card">
+        <h2>Coût et consommation</h2>
+        <div class="mt-3">
+            <div class="mb-3">
+                <span class="d-block text-muted small text-uppercase">Coût estimé (Mois)</span>
+                <span class="h2 fw-bold text-success">{{ current_month_cost|number_format(2, ',', ' ') }} €</span>
+            </div>
+            <div>
+                <span class="d-block text-muted small text-uppercase">Consommation estimée</span>
+                <span class="h4 fw-bold">{{ current_month_consumption }} kWh</span>
+            </div>
+        </div>
+    </section>
 
-	<section class="card">
-		<h2>Coût et consommation</h2>
-		<div class="mt-3">
-			<div class="mb-3">
-				<span class="d-block text-muted small text-uppercase">Coût estimé</span>
-				<span class="h2 fw-bold text-success">{{ current_month_cost|number_format(2, ',', ' ') }}
-					€</span>
-			</div>
-			<div>
-				<span class="d-block text-muted small text-uppercase">Consommation estimée</span>
-				<span class="h4 fw-bold">{{ current_month_consumption }}
-					kWh</span>
-			</div>
-		</div>
-	</section>
+    {# Alertes #}
+    <section class="card">
+        <h2>Alertes Intelligentes</h2>
+        <p style="color: #666;">Aucune alerte pour le moment. Votre consommation est stable.</p>
+    </section>
+</div>
+{% endblock %}
 
-	<section class="card">
-		<h2>Alertes Intelligentes</h2>
-	</section>
-</div>{% endblock %}{% block javascripts %}
+{% block javascripts %}
 {{ parent() }}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-	document.addEventListener('DOMContentLoaded', function () {
-const ctx = document.getElementById('consumptionChart').getContext('2d');
+    document.addEventListener('DOMContentLoaded', function () {
+        
+        // --- 1. GRAPHIQUE LINÉAIRE (CONSOMMATION) ---
+        const ctx = document.getElementById('consumptionChart').getContext('2d');
+        
+        const dataJour = {
+            labels: ['00h', '04h', '08h', '12h', '16h', '20h'],
+            datasets: [{
+                label: 'kWh',
+                data: [0.5, 0.4, 1.2, 2.5, 1.8, 3.0],
+                borderColor: '#1a361c',
+                backgroundColor: 'rgba(26, 54, 28, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        };
 
-// Données simulées
-const dataJour = {
-labels: [
-'00h',
-'04h',
-'08h',
-'12h',
-'16h',
-'20h'
-],
-datasets: [
-{
-label: 'Consommation (kWh)',
-data: [
-0.5,
-0.4,
-1.2,
-2.5,
-1.8,
-3.0
-],
-backgroundColor: 'rgba(26, 54, 28, 0.2)',
-borderColor: '#1a361c',
-borderWidth: 2,
-tension: 0.4,
-fill: true
-}
-]
-};
+        const dataSemaine = {
+            labels: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
+            datasets: [{
+                label: 'kWh',
+                data: [12, 14, 11, 15, 18, 22, 19],
+                borderColor: '#1a361c',
+                backgroundColor: 'rgba(26, 54, 28, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        };
 
-const dataSemaine = {
-labels: [
-'Lun',
-'Mar',
-'Mer',
-'Jeu',
-'Ven',
-'Sam',
-'Dim'
-],
-datasets: [
-{
-label: 'Consommation (kWh)',
-data: [
-12,
-14,
-11,
-15,
-18,
-22,
-19
-],
-backgroundColor: 'rgba(26, 54, 28, 0.2)',
-borderColor: '#1a361c',
-borderWidth: 2,
-tension: 0.4,
-fill: true
-}
-]
-};
+        const dataMois = {
+            labels: ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'],
+            datasets: [{
+                label: 'kWh',
+                data: [85, 90, 78, 87],
+                borderColor: '#1a361c',
+                backgroundColor: 'rgba(26, 54, 28, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        };
 
-const dataMois = {
-labels: [
-'Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'
-],
-datasets: [
-{
-label: 'Consommation (kWh)',
-data: [
-85, 90, 78, 87
-],
-backgroundColor: 'rgba(26, 54, 28, 0.2)',
-borderColor: '#1a361c',
-borderWidth: 2,
-tension: 0.4,
-fill: true
-}
-]
-};
+        let currentChart = new Chart(ctx, {
+            type: 'line',
+            data: dataMois,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } }
+            }
+        });
 
-let currentChart = new Chart(ctx, {
-type: 'line',
-data: dataMois, // Défaut : Mois
-options: {
-responsive: true,
-maintainAspectRatio: false,
-plugins: {
-legend: {
-display: false
-}
-},
-scales: {
-y: {
-beginAtZero: true,
-grid: {
-color: '#f0f0f0'
-}
-},
-x: {
-grid: {
-display: false
-}
-}
-}
-}
-});
+        // Gestion du Toggle Consommation
+        document.querySelectorAll('.toggle-bar span').forEach(toggle => {
+            toggle.addEventListener('click', function () {
+                document.querySelectorAll('.toggle-bar span').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                const period = this.textContent.trim();
+                if (period === 'Jour') currentChart.data = dataJour;
+                else if (period === 'Semaine') currentChart.data = dataSemaine;
+                else currentChart.data = dataMois;
+                currentChart.update();
+            });
+        });
 
-// Gestion des boutons
-const toggles = document.querySelectorAll('.toggle-bar span');
-toggles.forEach(toggle => {
-toggle.addEventListener('click', function () { // Update active class
-toggles.forEach(t => t.classList.remove('active'));
-this.classList.add('active');
-
-// Update chart data
-const period = this.textContent.trim();
-if (period === 'Jour') {
-currentChart.data = dataJour;
-} else if (period === 'Semaine') {
-currentChart.data = dataSemaine;
-} else {
-currentChart.data = dataMois;
-} currentChart.update();
-});
-});
-});
-</script>{% endblock %}
+        // --- 2. GRAPHIQUE CAMEMBERT (IMPACT CARBONE) ---
+        {% if latest_bilan %}
+            const ctxImpact = document.getElementById('impactChart').getContext('2d');
+            new Chart(ctxImpact, {
+                type: 'pie',
+                data: {
+                    labels: ['Logement', 'Numérique', 'Alimentation', 'Transports', 'Électroménager', 'Textile'],
+                    datasets: [{
+                        data: [
+                            {{ latest_bilan.logement }},
+                            {{ latest_bilan.numerique }},
+                            {{ latest_bilan.alimentation }},
+                            {{ latest_bilan.transports }},
+                            {{ latest_bilan.electromenager }},
+                            {{ latest_bilan.textile }}
+                        ],
+                        backgroundColor: [
+                            '#1a361c', // Vert Energreen
+                            '#493315', // Marron Energreen
+                            '#829460', // Olive
+                            '#A68966', // Sable
+                            '#2D5A27', // Vert moyen
+                            '#D9D9D9'  // Gris
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: { boxWidth: 12, font: { size: 10 } }
+                        }
+                    }
+                }
+            });
+        {% endif %}
+    });
+</script>
+{% endblock %}
