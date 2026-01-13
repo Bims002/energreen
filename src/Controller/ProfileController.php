@@ -26,6 +26,20 @@ final class ProfileController extends AbstractController
         ]);
     }
 
+    #[Route('/profil/edit', name: 'app_profile_edit')]
+    public function edit(): Response
+    {
+        $user = $this->getUser();
+
+        if (!$user) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        return $this->render('profil_edit.html.twig', [
+            'user' => $user,
+        ]);
+    }
+
     #[Route('/profil/update', name: 'app_profile_update', methods: ['POST'])]
     public function update(Request $request, EntityManagerInterface $em, UserPasswordHasherInterface $hasher): Response
     {
@@ -40,7 +54,7 @@ final class ProfileController extends AbstractController
         $submittedToken = $request->request->get('_csrf_token');
         if (!$this->isCsrfTokenValid('update-profile', $submittedToken)) {
             $this->addFlash('error', 'Token CSRF invalide. Veuillez réessayer.');
-            return $this->redirectToRoute('app_energreen_profil');
+            return $this->redirectToRoute('app_profile_edit');
         }
 
         $user->setEmail($request->request->get('email'));
@@ -57,7 +71,7 @@ final class ProfileController extends AbstractController
         $em->flush();
 
         $this->addFlash('success', 'Profil mis à jour avec succès !');
-        return $this->redirectToRoute('app_energreen_profil');
+        return $this->redirectToRoute('app_profile_edit');
     }
 
     #[Route('/profil/delete', name: 'app_profile_delete', methods: ['POST'])]
@@ -73,7 +87,7 @@ final class ProfileController extends AbstractController
         $submittedToken = $request->request->get('_csrf_token');
         if (!$this->isCsrfTokenValid('delete-account', $submittedToken)) {
             $this->addFlash('error', 'Token CSRF invalide. Suppression annulée.');
-            return $this->redirectToRoute('app_energreen_profil');
+            return $this->redirectToRoute('app_profile_edit');
         }
 
         // On invalide la session avant de supprimer

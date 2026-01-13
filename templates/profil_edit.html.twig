@@ -1,0 +1,165 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier mon profil - ENERGREEN{% endblock %}
+
+{% block body %}
+<style>
+    body {
+        background-color: #f0f4f1;
+        font-family: sans-serif;
+    }
+    .profile-container {
+        max-width: 600px;
+        margin: 50px auto;
+        padding: 30px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        border-top: 5px solid #2e7d32;
+    }
+    .profile-title {
+        color: #2e7d32;
+        text-align: center;
+        margin-bottom: 25px;
+    }
+    .form-group {
+        margin-bottom: 15px;
+    }
+    label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: #333;
+    }
+    input {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        box-sizing: border-box;
+        font-size: 1rem;
+    }
+    input[readonly] {
+        background-color: #f4f4f4;
+        color: #777;
+        cursor: not-allowed;
+        border: 1px dashed #bbb;
+    }
+
+    .save-button {
+        width: 100%;
+        background-color: #2e7d32;
+        color: white;
+        border: none;
+        padding: 14px;
+        border-radius: 8px;
+        font-weight: bold;
+        cursor: pointer;
+        margin-top: 10px;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+        margin-top: 20px;
+        width: 100%;
+    }
+    .btn-action {
+        flex: 1;
+        padding: 12px;
+        border-radius: 8px;
+        font-weight: bold;
+        text-align: center;
+        text-decoration: none;
+        font-size: 0.95rem;
+        display: block;
+        box-sizing: border-box;
+        border: none;
+        cursor: pointer;
+    }
+    .btn-secondary {
+        background-color: #6c757d;
+        color: white;
+    }
+    .btn-danger {
+        background-color: #dc3545;
+        color: white;
+        width: 100%;
+    }
+
+    .alert {
+        padding: 10px;
+        border-radius: 5px;
+        margin-bottom: 15px;
+        text-align: center;
+    }
+    .alert-success {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    .alert-error {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+</style>
+
+<div class="profile-container">
+    <h1 class="profile-title">Modifier mon profil</h1>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-error">{{ message }}</div>
+    {% endfor %}
+
+    {% if app.user %}
+        <form method="POST" action="{{ path('app_profile_update') }}">
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" name="email" value="{{ app.user.email }}" required>
+            </div>
+
+            <div style="display: flex; gap: 15px;">
+                <div class="form-group" style="flex: 1;">
+                    <label>Nom</label>
+                    <input type="text" name="nom" value="{{ app.user.nom }}" required>
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label>Prénom</label>
+                    <input type="text" name="prenom" value="{{ app.user.prenom }}">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Statut Professionnel</label>
+                <input type="text" value="{{ app.user.statutPro }}" readonly>
+            </div>
+
+            <div class="form-group">
+                <label>Nouveau mot de passe</label>
+                <input type="password" name="new_password" placeholder="Laisser vide pour ne pas changer">
+            </div>
+
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token('update-profile') }}">
+
+            <button type="submit" class="save-button">Enregistrer les modifications</button>
+        </form>
+
+        <div class="action-buttons">
+            <a href="{{ path('app_energreen_profil') }}" class="btn-action btn-secondary">Retour au profil</a>
+
+            <form action="{{ path('app_profile_delete') }}" method="POST" onsubmit="return confirm('Supprimer définitivement votre compte ?');" style="flex: 1;">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('delete-account') }}">
+                <button type="submit" class="btn-action btn-danger">Supprimer le compte</button>
+            </form>
+        </div>
+
+        <p style="text-align: center; color: #888; font-size: 0.8rem; margin-top: 20px;">
+            Membre depuis le :
+            {{ app.user.createdAt|date('d/m/Y') }}
+        </p>
+    {% endif %}
+</div>
+{% endblock %}
