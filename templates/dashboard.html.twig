@@ -5,7 +5,7 @@
 {% block stylesheets %}
 <style>
     :root {
-        --vert-energreen: #1a361c;
+        --vert-energreen: #1a3020; 
         --marron-energreen: #493315;
         --gris-fond: #f4f7f6;
         --blanc: #ffffff;
@@ -41,9 +41,6 @@
     .span-2 { grid-column: span 2; }
     .span-3 { grid-column: span 3; }
 
-
-    h1 { color: #f4f7f6; }
-
     .btn-energreen {
         background-color: var(--vert-energreen);
         color: white;
@@ -51,6 +48,41 @@
         border-radius: 5px;
         text-decoration: none;
         font-weight: bold;
+        border: none;
+        transition: opacity 0.3s;
+    }
+
+    .btn-energreen-dark {
+        background-color: var(--vert-energreen);
+        color: white !important;
+        padding: 6px 15px;
+        border-radius: 4px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.85rem;
+        border: none;
+        display: inline-block;
+        transition: opacity 0.2s;
+    }
+
+    .btn-energreen:hover, .btn-energreen-dark:hover {
+        opacity: 0.9;
+        color: white;
+    }
+
+    .nav-pills .nav-link {
+        background-color: #f0f2f0;
+        color: var(--vert-energreen);
+        border: 1px solid var(--vert-energreen);
+        margin-left: 5px;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+
+    .nav-pills .nav-link.active {
+        background-color: var(--vert-energreen) !important;
+        color: white !important;
+        border-color: var(--vert-energreen);
     }
 
     .toggle-bar {
@@ -64,11 +96,26 @@
         padding: 5px 15px;
         cursor: pointer;
         border-radius: 3px;
+        font-size: 0.9rem;
     }
 
     .toggle-bar .active {
         background: var(--marron-energreen);
         color: white;
+    }
+
+    /* Badge de Note A-F */
+    .carbon-grade-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 35px;
+        height: 35px;
+        border-radius: 6px;
+        color: white;
+        font-weight: 800;
+        margin-left: 10px;
+        vertical-align: middle;
     }
 </style>
 {% endblock %}
@@ -110,26 +157,104 @@
         </div>
     </section>
 
-    {# Suggestions #}
+    {# Section Suggestions personnalisés (Note retirée d'ici) #}
     <section class="card">
-        <h2>Suggestions Personnalisées</h2>
-        <p style="margin-top: 20px; color: #666;">Optimisez votre chauffage pour réduire de 10% votre facture.</p>
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px;">
+            <h2 style="margin: 0; font-size: 1.2rem;">Suggestions</h2>
+            
+            <ul class="nav nav-pills" id="suggestionTabs" role="tablist">
+                <li class="nav-item">
+                    <button class="nav-link active py-1 px-3" id="carbone-tab" data-bs-toggle="pill" data-bs-target="#tab-carbone" type="button" style="font-size: 0.8rem;">Impact Carbone</button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link py-1 px-3" id="elec-tab" data-bs-toggle="pill" data-bs-target="#tab-elec" type="button" style="font-size: 0.8rem;">Électricité</button>
+                </li>
+            </ul>
+        </div>
+
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="tab-carbone" role="tabpanel">
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    {% if suggestions_carbone is defined and suggestions_carbone is not empty %}
+                        {% for categorie, message in suggestions_carbone|slice(0, 3) %}
+                            <div style="padding: 10px; border-radius: 8px; background: #f8faf9; border-left: 5px solid var(--vert-energreen);">
+                                <small><strong>{{ categorie }}</strong></small>
+                                <p style="margin: 0; font-size: 0.85em; color: #555;">{{ message }}</p>
+                            </div>
+                        {% endfor %}
+                        {% if suggestions_carbone|length > 3 %}
+                            <button class="btn-energreen-dark mt-2" data-bs-toggle="modal" data-bs-target="#suggestionsModal">
+                                Voir tout le bilan ({{ suggestions_carbone|length }} suggestions)
+                            </button>
+                        {% endif %}
+                    {% else %}
+                        <p class="text-muted small">Aucun bilan trouvé. <a href="{{ path('app_formulaire') }}">Calculer mon impact</a>.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="tab-elec" role="tabpanel">
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    {% if suggestions_elec is defined and suggestions_elec is not empty %}
+                        {% for titre, message in suggestions_elec %}
+                            <div style="padding: 10px; border-radius: 8px; background: #f0f7ff; border-left: 5px solid #007bff;">
+                                <small><strong style="color: #007bff;">{{ titre }}</strong></small>
+                                <p style="margin: 0; font-size: 0.85em; color: #555;">{{ message }}</p>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted small">Saisissez vos consommations pour voir toutes les suggestions.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
     </section>
 
-    {# NOUVELLE SECTION : IMPACT CARBONE GLOBAL (CAMEMBERT) #}
+    {# NOUVELLE SECTION : IMPACT CARBONE GLOBAL (AVEC LA NOTE ICI) #}
     <section class="card">
-        <h2>Impact Carbone Global</h2>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+            <h2 style="margin: 0;">Impact Global</h2>
+        </div>
+
         {% if latest_bilan %}
-            <div style="height: 200px; margin: 20px 0;">
+            <div style="height: 200px; margin: 10px 0;">
                 <canvas id="impactChart"></canvas>
             </div>
+            
             <ul style="list-style: none; padding: 0; margin-top: 10px; font-size: 0.9em;">
                 <li style="border-bottom: 1px solid #eee; padding: 5px 0;">
                     <strong>Total : {{ latest_bilan.total|number_format(0, ',', ' ') }} kg CO2/an</strong>
                 </li>
-                <li style="padding: 5px 0; color: #666;">
+                
+                {# AJOUT DE LA NOTE ET DE LA PHRASE EN DESSOUS DU TOTAL #}
+                {% if carbon_rating is defined %}
+                    <li style="padding: 10px 0; display: flex; align-items: center; gap: 10px;">
+                        <span style="color: #555;">Votre score écologique :</span>
+                        <div class="carbon-grade-badge" style="background-color: {{ carbon_rating.color }}; margin-left: 0;">
+                            {{ carbon_rating.label }}
+                        </div>
+                    </li>
+                    <li style="padding-bottom: 10px;">
+                        <p style="margin: 0; font-size: 0.9em; font-style: italic; color: {{ carbon_rating.color }}; font-weight: 600;">
+                            « Vous avez une note de {{ carbon_rating.label }}, 
+                            {% if carbon_rating.label == 'A' or carbon_rating.label == 'B' %}
+                                bravo pour vos efforts !
+                            {% elseif carbon_rating.label == 'C' or carbon_rating.label == 'D' %}
+                                vous êtes sur la bonne voie.
+                            {% else %}
+                                des améliorations sont possibles.
+                            {% endif %} »
+                        </p>
+                    </li>
+                {% endif %}
+
+                <li style="padding: 5px 0; color: #666; border-top: 1px solid #eee;">
                     <small>Dernier calcul le {{ latest_bilan.createdAt|date('d/m/Y') }}</small>
                 </li>
+                
+                <div style="text-align: center; padding: 15px 0;">
+                    <a href="{{ path('app_formulaire') }}" class="btn-energreen" style="font-size: 0.8em;">Recalculer mon empreinte</a>
+                </div>
             </ul>
         {% else %}
             <div style="text-align: center; padding: 20px;">
@@ -160,6 +285,29 @@
         <p style="color: #666;">Aucune alerte pour le moment. Votre consommation est stable.</p>
     </section>
 </div>
+
+{# MODALE #}
+{% if suggestions_carbone is defined and suggestions_carbone|length > 3 %}
+<div class="modal fade" id="suggestionsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header" style="background: var(--vert-energreen); color: white;">
+                <h5 class="modal-title">Tous vos conseils Carbone</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                {% for categorie, message in suggestions_carbone %}
+                    <div class="mb-3 p-2" style="border-bottom: 1px solid #eee;">
+                        <strong style="color: var(--vert-energreen);">{{ categorie }}</strong>
+                        <p class="small mb-0">{{ message }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 {% endblock %}
 
 {% block javascripts %}
@@ -168,33 +316,8 @@
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         
-        // --- 1. GRAPHIQUE LINÉAIRE (CONSOMMATION) ---
+        // --- GRAPHIQUE LINÉAIRE ---
         const ctx = document.getElementById('consumptionChart').getContext('2d');
-        
-        const dataJour = {
-            labels: ['00h', '04h', '08h', '12h', '16h', '20h'],
-            datasets: [{
-                label: 'kWh',
-                data: [0.5, 0.4, 1.2, 2.5, 1.8, 3.0],
-                borderColor: '#1a361c',
-                backgroundColor: 'rgba(26, 54, 28, 0.1)',
-                fill: true,
-                tension: 0.4
-            }]
-        };
-
-        const dataSemaine = {
-            labels: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
-            datasets: [{
-                label: 'kWh',
-                data: [12, 14, 11, 15, 18, 22, 19],
-                borderColor: '#1a361c',
-                backgroundColor: 'rgba(26, 54, 28, 0.1)',
-                fill: true,
-                tension: 0.4
-            }]
-        };
-
         const dataMois = {
             labels: ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'],
             datasets: [{
@@ -217,20 +340,7 @@
             }
         });
 
-        // Gestion du Toggle Consommation
-        document.querySelectorAll('.toggle-bar span').forEach(toggle => {
-            toggle.addEventListener('click', function () {
-                document.querySelectorAll('.toggle-bar span').forEach(t => t.classList.remove('active'));
-                this.classList.add('active');
-                const period = this.textContent.trim();
-                if (period === 'Jour') currentChart.data = dataJour;
-                else if (period === 'Semaine') currentChart.data = dataSemaine;
-                else currentChart.data = dataMois;
-                currentChart.update();
-            });
-        });
-
-        // --- 2. GRAPHIQUE CAMEMBERT (IMPACT CARBONE) ---
+        // --- GRAPHIQUE CAMEMBERT ---
         {% if latest_bilan %}
             const ctxImpact = document.getElementById('impactChart').getContext('2d');
             new Chart(ctxImpact, {
@@ -246,14 +356,7 @@
                             {{ latest_bilan.electromenager }},
                             {{ latest_bilan.textile }}
                         ],
-                        backgroundColor: [
-                            '#1a361c', // Vert Energreen
-                            '#493315', // Marron Energreen
-                            '#829460', // Olive
-                            '#A68966', // Sable
-                            '#2D5A27', // Vert moyen
-                            '#D9D9D9'  // Gris
-                        ],
+                        backgroundColor: ['#00d60eff', '#401ddbff', '#f0f01dff', '#e82222ff', '#31ece5ff', '#ea32f1ff'],
                         borderWidth: 1
                     }]
                 },

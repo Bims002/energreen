@@ -605,13 +605,41 @@
           {% endfor %}
         ];
 
+        // Palette de couleurs Energreen
+        const energreenPalette = [
+          '#00d60eff', // Vert foncé (Logement)
+          '#401ddbff', // Marron (Numérique)
+          '#f0f01dff', // Vert moyen (Alimentation)
+          '#e82222ff', // Marron clair (Transports)
+          '#31ece5ff', // Vert grisé (Électroménager)
+          '#ea32f1ff'  // Sable / Beige (Textile)
+        ];
+
         const ctx = document.getElementById('carbonPie').getContext('2d');
         new Chart(ctx, {
           type: 'pie',
-          data: { labels, datasets: [{ data: values }] },
+          data: { 
+            labels: labels, 
+            datasets: [{ 
+              data: values,
+              backgroundColor: energreenPalette, // Application des couleurs
+              borderColor: '#ffffff',
+              borderWidth: 2
+            }] 
+          },
           options: {
             responsive: true,
             plugins: {
+              legend: {
+                position: 'bottom',
+                labels: {
+                  color: '#1a3020', // Texte de la légende en vert foncé
+                  font: {
+                    family: 'Montserrat',
+                    size: 12
+                  }
+                }
+              },
               tooltip: {
                 callbacks: {
                   label: function(context) {
