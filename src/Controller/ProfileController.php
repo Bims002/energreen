@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller\Energreen;
+namespace App\Controller;
 
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
@@ -36,6 +36,13 @@ final class ProfileController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
 
+        // Vérification du token CSRF
+        $submittedToken = $request->request->get('_csrf_token');
+        if (!$this->isCsrfTokenValid('update-profile', $submittedToken)) {
+            $this->addFlash('error', 'Token CSRF invalide. Veuillez réessayer.');
+            return $this->redirectToRoute('app_energreen_profil');
+        }
+
         $user->setEmail($request->request->get('email'));
         $user->setNom($request->request->get('nom'));
         $user->setPrenom($request->request->get('prenom'));
@@ -60,6 +67,13 @@ final class ProfileController extends AbstractController
 
         if (!$user) {
             return $this->redirectToRoute('app_login');
+        }
+
+        // Vérification du token CSRF
+        $submittedToken = $request->request->get('_csrf_token');
+        if (!$this->isCsrfTokenValid('delete-account', $submittedToken)) {
+            $this->addFlash('error', 'Token CSRF invalide. Suppression annulée.');
+            return $this->redirectToRoute('app_energreen_profil');
         }
 
         // On invalide la session avant de supprimer

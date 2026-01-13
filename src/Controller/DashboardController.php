@@ -1,5 +1,5 @@
 <?php
-namespace App\Controller\Energreen;
+namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -32,20 +32,23 @@ class DashboardController extends AbstractController
         $lodgmentRepo = $entityManager->getRepository(Lodgment::class);
         $userLodgment = $lodgmentRepo->findOneBy(['user' => $user]);
 
-        // Calculer les valeurs pour le dashboard
+        // Vérifier si l'utilisateur a des données
+        $hasData = $latestConsumption !== null && $userLodgment !== null;
+
+        // Calculer les valeurs pour le dashboard (ou 0 si pas de données)
         $consumption = $latestConsumption ? $latestConsumption->getPastConsumption() : 0;
         $cost = $consumption * 0.17; // Approx 0.17€/kWh
         $co2Emissions = $consumption * 0.367; // Approx 367g CO2/kWh en France
 
         return $this->render('dashboard.html.twig', [
+            'has_data' => $hasData,
             'co2_emissions' => round($co2Emissions),
             'current_month_consumption' => $consumption,
             'current_month_cost' => $cost,
             'user_lodgment' => $userLodgment,
             'latest_consumption' => $latestConsumption,
+            'latest_bilan' => null, // À implémenter : bilan carbone complet
         ]);
     }
 
 }
-
-

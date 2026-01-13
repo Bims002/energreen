@@ -41,15 +41,6 @@
     .span-2 { grid-column: span 2; }
     .span-3 { grid-column: span 3; }
 
-    .header-banner {
-        border-bottom: 2px solid #eee;
-        margin-bottom: 20px;
-        padding: 10px 20px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background-color: var(--vert-energreen);
-    }
 
     h1 { color: #f4f7f6; }
 
@@ -83,10 +74,6 @@
 {% endblock %}
 
 {% block body %}
-<header class="header-banner">
-    <h1>EnerGreen</h1>
-    <small style="color: white;">VOTRE CONSOMMATION EN UN CLIC</small>
-</header>
 
 {% for message in app.flashes('success') %}
     <div class="alert alert-success alert-dismissible fade show mx-auto" role="alert" style="max-width: 1200px; margin-top: 20px;">

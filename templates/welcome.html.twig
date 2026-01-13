@@ -34,13 +34,7 @@
 			color: white;
 		}
 	</style>
-	<nav class="navbar bg-energreen">
-		<div class="container-fluid justify-content-center">
-			<a class="navbar-brand" href="{{ path('app_energreen_welcome') }}" style="color: white">
-				<img src="{{ asset('icons/logo.png') }}" alt="Logo" width="150" height="40">
-			</a>
-		</div>
-	</nav>
+
 
 	<div class="container mt-5">
 		<div class="row justify-content-center">
@@ -60,7 +54,7 @@
 								<p class="text-muted pt-4">Merci de nous donner plus de détails sur votre logement.</p>
 							</div>
 							<div class="col p-4">
-								<form id="welcomeForm" action="{{ path('app_welcome_submit') }}" method="POST">
+								<form id="welcomeForm" action="{{ path('app_energreen_welcome') }}" method="POST">
 									<div class="mb-3">
 										<label class="form-label fw-bold mt-2">Consommation du mois dernier</label>
 										<div class="row g-2">
