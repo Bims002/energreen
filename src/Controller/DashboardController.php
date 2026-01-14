@@ -54,15 +54,15 @@ class DashboardController extends AbstractController
     // --- AJOUT DE LA MÉTHODE DE CALCUL ---
     private function calculateCarbonGrade(float $total): array
     {
-        if ($total <= 2000)
-            return ['label' => 'A', 'color' => '#2ECC71'];
         if ($total <= 5000)
+            return ['label' => 'A', 'color' => '#2ECC71'];
+        if ($total <= 7000)
             return ['label' => 'B', 'color' => '#97D700'];
-        if ($total <= 8000)
+        if ($total <= 9000)
             return ['label' => 'C', 'color' => '#F4D03F'];
-        if ($total <= 10000)
+        if ($total <= 11000)
             return ['label' => 'D', 'color' => '#F39C12'];
-        if ($total <= 12000)
+        if ($total <= 13000)
             return ['label' => 'E', 'color' => '#E67E22'];
         return ['label' => 'F', 'color' => '#E74C3C'];
     }

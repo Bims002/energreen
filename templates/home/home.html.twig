@@ -82,6 +82,9 @@
     .hero-content {
         max-width: 800px;
         margin: 0 auto;
+        display: flex;
+        flex-direction: column; 
+        align-items: center; 
     }
     
     .hero h1 {
@@ -105,6 +108,17 @@
     .hero .btn-cta {
         background: white;
         color: #1A361C;
+        padding: 15px 40px;
+        font-size: 1.2rem;
+        border-radius: 30px;
+        display: inline-block;
+        text-decoration: none;
+        font-weight: 700;
+        transition: all 0.3s;
+    }
+
+    .hero .btn-cta2 {
+        color: #ffffffff;
         padding: 15px 40px;
         font-size: 1.2rem;
         border-radius: 30px;
@@ -241,6 +255,7 @@
             <a href="{{ path('app_energreen_welcome') }}" class="btn-cta">Commencer l'analyse</a>
         {% else %}
             <a href="{{ path('app_register') }}" class="btn-cta">Rejoignez-nous gratuitement</a>
+            <a href="{{ path('app_login') }}" class="btn-cta2">Se connecter</a>
         {% endif %}
     </div>
 </section>
