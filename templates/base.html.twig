@@ -31,19 +31,29 @@
                 color: white !important;
             }
             .profile-dropdown .dropdown-toggle {
+                background: none;
+                border: none;
+                padding: 0;
+                display: flex;
+                align-items: center;
+                color: white;
+            }
+            .profile-dropdown .dropdown-toggle:hover {
+                background: none;
+            }
+            .profile-icon {
                 background: rgba(255,255,255,0.2);
                 border: 2px solid rgba(255,255,255,0.3);
                 border-radius: 50%;
                 width: 40px;
                 height: 40px;
-                padding: 0;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                color: white;
                 font-size: 1.2rem;
+                transition: background-color 0.3s;
             }
-            .profile-dropdown .dropdown-toggle:hover {
+            .profile-icon:hover {
                 background: rgba(255,255,255,0.3);
             }
             .profile-dropdown .dropdown-toggle::after {
@@ -54,6 +64,19 @@
                 box-shadow: 0 4px 15px rgba(0,0,0,0.2);
                 border: none;
                 min-width: 200px;
+                margin-top: 10px !important;
+                right: 0 !important;
+                left: auto !important;
+                transform: translateX(0) !important;
+                position: absolute !important;
+            }
+            .profile-dropdown {
+                position: relative;
+            }
+            @media (max-width: 991px) {
+                .profile-dropdown .dropdown-menu {
+                    right: 15px !important;
+                }
             }
             .profile-dropdown .dropdown-item {
                 padding: 10px 20px;
@@ -90,15 +113,26 @@
                             <a class="nav-link" href="{{ path('app_formulaire') }}">Empreinte carbone</a>
                         </li>
                     </ul>
-                    <ul class="navbar-nav ms-auto">
+                    <ul class="navbar-nav ms-auto" style="padding-right: 15px;">
                         <li class="nav-item dropdown profile-dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                👤
+                            <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="padding-right: 0;">
+                                <span style="color: white; font-weight: 500;">
+                                    {% if app.user.prenom %}
+                                        {{ app.user.prenom }}
+                                    {% elseif app.user.nom %}
+                                        {{ app.user.nom }}
+                                    {% else %}
+                                        {{ app.user.email }}
+                                    {% endif %}
+                                </span>
+                                <span class="profile-icon">
+                                    👤
+                                </span>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
                                 <li>
                                     <span class="dropdown-item-text">
-                                        <strong>{{ app.user.nom }} {{ app.user.prenom }}</strong><br>
+                                        <strong>{{ app.user.prenom ?? app.user.nom ?? 'Utilisateur' }}</strong><br>
                                         <small class="text-muted">{{ app.user.email }}</small>
                                     </span>
                                 </li>
@@ -106,7 +140,12 @@
                                 <li><a class="dropdown-item" href="{{ path('app_energreen_profil') }}">👤 Mon profil</a></li>
                                 <li><a class="dropdown-item" href="{{ path('app_profile_edit') }}">⚙️ Modifier mon compte</a></li>
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item text-danger" href="{{ path('app_logout') }}">🚪 Déconnexion</a></li>
+                                <li>
+                                    <form method="post" action="{{ path('app_logout') }}" style="margin: 0;">
+                                        <input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}"/>
+                                        <button type="submit" class="dropdown-item text-danger" style="border: none; background: none; width: 100%; text-align: left; padding: 10px 20px;">🚪 Déconnexion</button>
+                                    </form>
+                                </li>
                             </ul>
                         </li>
                     </ul>

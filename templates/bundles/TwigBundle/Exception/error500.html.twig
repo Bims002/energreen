@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Erreur serveur - Energreen</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<style>
+    body {
+        background-color: #f0f4f1;
+        font-family: 'Montserrat', sans-serif;
+        color: #1a361c;
+        text-align: center;
+        padding: 50px;
+    }
+    .error-container {
+        max-width: 600px;
+        margin: 50px auto;
+        background: white;
+        padding: 40px;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        border-top: 5px solid #dc3545; /* Couleur rouge pour 500 */
+    }
+    h1 {
+        font-size: 4rem;
+        color: #dc3545;
+        margin-bottom: 20px;
+    }
+    h2 {
+        font-size: 1.8rem;
+        color: #1a361c;
+        margin-bottom: 25px;
+    }
+    p {
+        font-size: 1.1rem;
+        color: #555;
+        margin-bottom: 30px;
+    }
+    .btn-action {
+        display: inline-block;
+        padding: 12px 25px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        margin: 0 10px;
+    }
+    .btn-retry {
+        background-color: #0d6efd; /* Bleu Bootstrap */
+        color: white;
+    }
+    .btn-retry:hover {
+        background-color: #0b5ed7;
+        transform: translateY(-2px);
+    }
+    .btn-dashboard {
+        background-color: #1a361c;
+        color: white;
+    }
+    .btn-dashboard:hover {
+        background-color: #142a15;
+        transform: translateY(-2px);
+    }
+</style>
+<div class="error-container">
+    <h1>500</h1>
+    <h2>Erreur interne du serveur</h2>
+    <p>Une erreur inattendue est survenue. Veuillez réessayer plus tard.</p>
+    <a href="javascript:location.reload()" class="btn-action btn-retry">Réessayer</a>
+    <a href="/dashboard" class="btn-action btn-dashboard">Retour au tableau de bord</a>
+</div>
+</body>
+</html>

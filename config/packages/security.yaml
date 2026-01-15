@@ -18,18 +18,11 @@ security:
         main:
             lazy: true
             provider: app_user_provider
-            
-            # Configuration du formulaire de connexion
-            form_login:
-                login_path: app_login
-                check_path: app_login
-                enable_csrf: true
-                default_target_path: app_dashboard
-            
-            # Configuration de la déconnexion
+            custom_authenticators:
+                - App\Security\AppAuthenticator
             logout:
                 path: app_logout
-                target: app_home
+                target: app_login
 
             # https://symfony.com/doc/current/security/impersonating_user.html
             # switch_user: true
