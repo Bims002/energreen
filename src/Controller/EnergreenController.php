@@ -9,7 +9,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Lodgment;
 use App\Entity\Consumption;
-use App\Form\WelcomeFormType;
+use App\Entity\Appliance;
 
 final class EnergreenController extends AbstractController
 {
@@ -17,42 +17,77 @@ final class EnergreenController extends AbstractController
     public function welcome(Request $request, EntityManagerInterface $entityManager): Response
     {
         $user = $this->getUser();
-
-        if (!$user) {
+        if (!$user)
             return $this->redirectToRoute('app_login');
+
+        if ($request->isMethod('POST')) {
+            try {
+                $lodgment = new Lodgment();
+                $lodgment->setLodgmentType($request->request->get('lodgment_type'));
+                $lodgment->setSurface((int) $request->request->get('surface'));
+                $lodgment->setOccupant((int) $request->request->get('occupants'));
+                $lodgment->setUser($user);
+
+                $applianceIds = $request->request->all('appliances');
+                foreach ($applianceIds as $id) {
+                    $appliance = $entityManager->getRepository(Appliance::class)->find($id);
+                    if ($appliance) {
+                        $lodgment->addAppliance($appliance);
+                    }
+                }
+                $entityManager->persist($lodgment);
+
+                $consumption = new Consumption();
+                $consumption->setPastConsumption((float) $request->request->get('past_consumption'));
+                $consumption->setBillingDate(new \DateTime($request->request->get('billing_date')));
+                $consumption->setUser($user);
+                $entityManager->persist($consumption);
+
+                $entityManager->flush();
+
+                return $this->redirectToRoute('app_dashboard');
+            } catch (\Exception $e) {
+                dd("Erreur : " . $e->getMessage());
+            }
         }
+        return $this->render('welcome.html.twig');
+    }
 
-        // Créer le formulaire
-        $form = $this->createForm(WelcomeFormType::class);
-        $form->handleRequest($request);
+    #[Route('/dashboard', name: 'app_dashboard')]
+    public function dashboard(EntityManagerInterface $entityManager): Response
+    {
+        $user = $this->getUser();
+        if (!$user)
+            return $this->redirectToRoute('app_login');
 
-        // Vérifier si le formulaire est soumis et valide
-        if ($form->isSubmitted() && $form->isValid()) {
-            $data = $form->getData();
+        $lodgment = $entityManager->getRepository(Lodgment::class)->findOneBy(['user' => $user], ['id' => 'DESC']);
 
-            // Créer et persister Lodgment
-            $lodgment = new Lodgment();
-            $lodgment->setLodgmentType($data['lodgment_type']);
-            $lodgment->setSurface($data['surface']);
-            $lodgment->setOccupant($data['occupants']);
-            $lodgment->setUser($user);
-            $entityManager->persist($lodgment);
+        // On récupère les deux listes nécessaires pour Twig
+        $currentAppliances = $lodgment ? $lodgment->getAppliances() : [];
+        $allAppliances = $entityManager->getRepository(Appliance::class)->findAll();
 
-            // Créer et persister Consumption
-            $consumption = new Consumption();
-            $consumption->setPastConsumption($data['past_consumption']);
-            $consumption->setBillingDate(new \DateTime($data['billing_date']));
-            $consumption->setUser($user);
-            $entityManager->persist($consumption);
-
-            $entityManager->flush();
-
-            $this->addFlash('success', 'Vos données ont été enregistrées avec succès !');
-            return $this->redirectToRoute('app_dashboard');
-        }
-
-        return $this->render('welcome.html.twig', [
-            'welcomeForm' => $form,
+        return $this->render('CalculatorConsumption.html.twig', [
+            'appliances' => $currentAppliances,
+            'allAppliances' => $allAppliances,
+            'lodgment' => $lodgment
         ]);
+    }
+
+    #[Route('/appliance/toggle/{id}', name: 'appliance_toggle', methods: ['POST'])]
+    public function toggleAppliance(Appliance $appliance, EntityManagerInterface $entityManager): Response
+    {
+        $user = $this->getUser();
+        $lodgment = $entityManager->getRepository(Lodgment::class)->findOneBy(['user' => $user], ['id' => 'DESC']);
+
+        if ($lodgment) {
+            if ($lodgment->getAppliances()->contains($appliance)) {
+                $lodgment->removeAppliance($appliance);
+            } else {
+                $lodgment->addAppliance($appliance);
+            }
+            $entityManager->flush();
+        }
+
+        return $this->redirectToRoute('app_dashboard');
     }
 }
