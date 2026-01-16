@@ -1,190 +1,193 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Connexion - ENERGREEN{% endblock %}
+{% block title %}Connexion - ENERGREEN
+{% endblock %}
 
 {% block body %}
-<style>
-    body {
-        background: linear-gradient(135deg, #1a361c 0%, #2e7d32 100%);
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        min-height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-direction: column;
-    }
-    
-    .login-container {
-        width: 100%;
-        max-width: 450px;
-        padding: 20px;
-    }
-    
-    .login-card {
-        background: white;
-        border-radius: 15px;
-        padding: 40px;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-    }
-    
-    .welcome-title {
-        color: #1a361c;
-        text-align: center;
-        margin-bottom: 10px;
-        font-size: 1.8rem;
-        font-weight: bold;
-    }
-    
-    .subtitle {
-        text-align: center;
-        color: #666;
-        margin-bottom: 30px;
-        font-size: 0.95rem;
-    }
-    
-    .form-group {
-        margin-bottom: 20px;
-        position: relative;
-    }
-    
-    label {
-        display: block;
-        margin-bottom: 8px;
-        color: #333;
-        font-weight: 500;
-    }
-    
-    .form-control {
-        width: 100%;
-        padding: 12px;
-        border: 2px solid #ddd;
-        border-radius: 8px;
-        font-size: 1rem;
-        transition: border-color 0.3s;
-        box-sizing: border-box;
-    }
-    
-    .password-wrapper {
-        position: relative;
-    }
-    
-    .password-wrapper .form-control {
-        padding-right: 45px;
-    }
-    
-    .toggle-password {
-        position: absolute;
-        right: 12px;
-        top: 50%;
-        transform: translateY(-50%);
-        cursor: pointer;
-        color: #666;
-        font-size: 1.2rem;
-        user-select: none;
-    }
-    
-    .toggle-password:hover {
-        color: #2e7d32;
-    }
-    
-    .form-control:focus {
-        outline: none;
-        border-color: #2e7d32;
-    }
-    
-    .btn-login {
-        width: 100%;
-        padding: 14px;
-        background-color: #2e7d32;
-        color: white;
-        border: none;
-        border-radius: 8px;
-        font-size: 1.1rem;
-        font-weight: bold;
-        cursor: pointer;
-        transition: background-color 0.3s;
-    }
-    
-    .btn-login:hover {
-        background-color: #1a361c;
-    }
-    
-    .alert {
-        padding: 12px;
-        border-radius: 8px;
-        margin-bottom: 20px;
-        text-align: center;
-    }
-    
-    .alert-danger {
-        background-color: #f8d7da;
-        color: #721c24;
-        border: 1px solid #f5c6cb;
-    }
-    
-    .login-footer {
-        text-align: center;
-        color: white;
-        margin-top: 30px;
-        font-size: 0.9rem;
-        opacity: 0.9;
-    }
-</style>
+	<style>
+		body {
+			background: linear-gradient(135deg, #1a361c 0%, #2e7d32 100%);
+			font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+			min-height: 100vh;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			flex-direction: column;
+		}
 
-<div class="login-container">
-    <div class="login-card">
-        {% for message in app.flashes('success') %}
-            <div class="alert alert-success" style="background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; padding: 12px; border-radius: 8px; margin-bottom: 20px; text-align: center;">
-                {{ message }}
-            </div>
-        {% endfor %}
-        <form method="post" action="{{ path('app_login') }}">
-            {% if error %}
-                <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
-            {% endif %}
+		.login-container {
+			width: 100%;
+			max-width: 450px;
+			padding: 20px;
+		}
 
-            <h1 class="welcome-title">Connectez-vous sur Energreen</h1>
-            <p class="subtitle">Agissons ensemble pour un avenir meilleur</p>
+		.login-card {
+			background: white;
+			border-radius: 15px;
+			padding: 40px;
+			box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+		}
 
-            <div class="form-group">
-                <label for="inputEmail">E-mail</label>
-                <input type="email" value="{{ last_username }}" name="_username" id="inputEmail" class="form-control" autocomplete="email" required autofocus>
-            </div>
+		.welcome-title {
+			color: #1a361c;
+			text-align: center;
+			margin-bottom: 10px;
+			font-size: 1.8rem;
+			font-weight: bold;
+		}
 
-            <div class="form-group">
-                <label for="inputPassword">Mot de passe</label>
-                <div class="password-wrapper">
-                    <input type="password" name="_password" id="inputPassword" class="form-control" autocomplete="current-password" required>
-                    <span class="toggle-password" onclick="togglePassword()">👁️</span>
-                </div>
-            </div>
+		.subtitle {
+			text-align: center;
+			color: #666;
+			margin-bottom: 30px;
+			font-size: 0.95rem;
+		}
 
-            <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+		.form-group {
+			margin-bottom: 20px;
+			position: relative;
+		}
 
-            <button class="btn-login" type="submit">
-                Se connecter
-            </button>
+		label {
+			display: block;
+			margin-bottom: 8px;
+			color: #333;
+			font-weight: 500;
+		}
 
-            <p style="text-align: center; margin-top: 20px; font-size: 0.85rem;">
-                Pas encore membre ?
-                <a href="{{ path('app_register') }}" style="color: #2e7d32; text-decoration: none; font-weight: bold;">Créer un compte</a>
-            </p>
-        </form>
-    </div>
-</div>
+		.form-control {
+			width: 100%;
+			padding: 12px;
+			border: 2px solid #ddd;
+			border-radius: 8px;
+			font-size: 1rem;
+			transition: border-color 0.3s;
+			box-sizing: border-box;
+		}
 
-<script>
-function togglePassword() {
-    const passwordInput = document.getElementById('inputPassword');
-    const toggleIcon = document.querySelector('.toggle-password');
-    
-    if (passwordInput.type === 'password') {
-        passwordInput.type = 'text';
-        toggleIcon.textContent = '🙈';
-    } else {
-        passwordInput.type = 'password';
-        toggleIcon.textContent = '👁️';
-    }
+		.password-wrapper {
+			position: relative;
+		}
+
+		.password-wrapper .form-control {
+			padding-right: 45px;
+		}
+
+		.toggle-password {
+			position: absolute;
+			right: 12px;
+			top: 50%;
+			transform: translateY(-50%);
+			cursor: pointer;
+			color: #666;
+			font-size: 1.2rem;
+			user-select: none;
+		}
+
+		.toggle-password:hover {
+			color: #2e7d32;
+		}
+
+		.form-control:focus {
+			outline: none;
+			border-color: #2e7d32;
+		}
+
+		.btn-login {
+			width: 100%;
+			padding: 14px;
+			background-color: #2e7d32;
+			color: white;
+			border: none;
+			border-radius: 8px;
+			font-size: 1.1rem;
+			font-weight: bold;
+			cursor: pointer;
+			transition: background-color 0.3s;
+		}
+
+		.btn-login:hover {
+			background-color: #1a361c;
+		}
+
+		.alert {
+			padding: 12px;
+			border-radius: 8px;
+			margin-bottom: 20px;
+			text-align: center;
+		}
+
+		.alert-danger {
+			background-color: #f8d7da;
+			color: #721c24;
+			border: 1px solid #f5c6cb;
+		}
+
+		.login-footer {
+			text-align: center;
+			color: white;
+			margin-top: 30px;
+			font-size: 0.9rem;
+			opacity: 0.9;
+		}
+	</style>
+
+	<div class="login-container">
+		<div class="login-card">
+			{% for message in app.flashes('success') %}
+				<div class="alert alert-success" style="background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; padding: 12px; border-radius: 8px; margin-bottom: 20px; text-align: center;">
+					{{ message }}
+				</div>
+			{% endfor %}
+			<form method="post" action="{{ path('app_login') }}">
+				{% if error %}
+					<div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+				{% endif %}
+
+				<h1 class="welcome-title">Connectez-vous sur Energreen</h1>
+				<p class="subtitle">Agissons ensemble pour un avenir meilleur</p>
+
+				<div class="form-group">
+					<label for="inputEmail">E-mail</label>
+					<input type="email" value="{{ last_username }}" name="_username" id="inputEmail" class="form-control" autocomplete="email" required autofocus>
+				</div>
+
+				<div class="form-group">
+					<label for="inputPassword">Mot de passe</label>
+					<div class="password-wrapper">
+						<input type="password" name="_password" id="inputPassword" class="form-control" autocomplete="current-password" required>
+						<span class="toggle-password" onclick="togglePassword()">
+							<i class="fas fa-eye"></i>
+						</span>
+					</div>
+				</div>
+
+				<input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+				<button class="btn-login" type="submit">
+					Se connecter
+				</button>
+
+				<p style="text-align: center; margin-top: 20px; font-size: 0.85rem;">
+					Pas encore membre ?
+					<a href="{{ path('app_register') }}" style="color: #2e7d32; text-decoration: none; font-weight: bold;">Créer un compte</a>
+				</p>
+			</form>
+		</div>
+	</div>
+
+	<script>
+		function togglePassword() {
+const passwordInput = document.getElementById('inputPassword');
+const toggleIcon = document.querySelector('.toggle-password');
+
+if (passwordInput.type === 'password') {
+passwordInput.type = 'text';
+toggleIcon.innerHTML = '<i class="fas fa-eye-slash"></i>';
+} else {
+passwordInput.type = 'password';
+toggleIcon.innerHTML = '<i class="fas fa-eye"></i>';
 }
-</script>
+}
+	</script>
 {% endblock %}

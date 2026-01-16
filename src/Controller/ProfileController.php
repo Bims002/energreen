@@ -26,6 +26,27 @@ final class ProfileController extends AbstractController
         ]);
     }
 
+    #[Route('/profil/verify-password', name: 'app_profile_verify_password', methods: ['POST'])]
+    public function verifyPassword(Request $request, UserPasswordHasherInterface $hasher): Response
+    {
+        $user = $this->getUser();
+
+        if (!$user) {
+            return $this->json(['success' => false, 'message' => 'Non authentifié']);
+        }
+
+        $data = json_decode($request->getContent(), true);
+        $password = $data['password'] ?? '';
+
+        if (empty($password)) {
+            return $this->json(['success' => false, 'message' => 'Mot de passe requis']);
+        }
+
+        $isValid = $hasher->isPasswordValid($user, $password);
+
+        return $this->json(['success' => $isValid]);
+    }
+
     #[Route('/profil/edit', name: 'app_profile_edit')]
     public function edit(): Response
     {
