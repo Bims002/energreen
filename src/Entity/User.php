@@ -47,10 +47,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $created_at = null;
 
+    // --- NOUVELLE RELATION AJOUTÉE ---
+    #[ORM\OneToOne(mappedBy: 'user', cascade: ['persist', 'remove'])]
+    private ?Lodgment $lodgment = null;
+
+    #[ORM\OneToOne(cascade: ['persist', 'remove'])]
+    private ?BilanCarbone $bilanCarbone = null;
+
     public function __construct()
     {
         $this->created_at = new \DateTime();
     }
+
+    // ... (Gardez vos getters/setters existants pour id, email, roles, password, etc.)
 
     public function getId(): ?int
     {
@@ -99,7 +108,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function eraseCredentials(): void
     {
-        // Nettoyage des données sensibles temporaires si nécessaire
     }
 
     public function getNom(): ?string
@@ -143,6 +151,34 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setCreatedAt(\DateTimeInterface $created_at): static
     {
         $this->created_at = $created_at;
+        return $this;
+    }
+
+    // --- NOUVEAUX GETTER ET SETTER POUR LODGMENT ---
+    public function getLodgment(): ?Lodgment
+    {
+        return $this->lodgment;
+    }
+
+    public function setLodgment(?Lodgment $lodgment): static
+    {
+        // On s'assure que le lien est bidirectionnel
+        if ($lodgment !== null && $lodgment->getUser() !== $this) {
+            $lodgment->setUser($this);
+        }
+
+        $this->lodgment = $lodgment;
+        return $this;
+    }
+
+    public function getBilanCarbone(): ?BilanCarbone
+    {
+        return $this->bilanCarbone;
+    }
+
+    public function setBilanCarbone(?BilanCarbone $bilanCarbone): static
+    {
+        $this->bilanCarbone = $bilanCarbone;
         return $this;
     }
 }

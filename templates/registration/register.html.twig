@@ -151,10 +151,15 @@
 			{{ form_errors(registrationForm.plainPassword.second) }}
 		</div>
 
-		<div class="checkbox-group">
+		<div class="checkbox-group d-flex align-items-center gap-2">
 			{{ form_widget(registrationForm.agreeTerms) }}
-			{{ form_label(registrationForm.agreeTerms, 'Accepter les conditions d\'utilisation') }}
-            </div>
+			<label for="{{ registrationForm.agreeTerms.vars.id }}">
+				Accepter les 
+				<a href="#" data-bs-toggle="modal" data-bs-target="#termsModal" style="color: var(--vert-energreen); font-weight: bold; text-decoration: underline;">
+					conditions d'utilisation
+				</a>
+			</label>
+		</div>
 
             <button type="submit" class="btn-register">Créer mon compte</button>
         {{ form_end(registrationForm) }}
@@ -162,6 +167,38 @@
         <p style="text-align: center; margin-top: 20px; font-size: 0.85rem;">
             Déjà un compte ? <a href="{{ path('app_login') }}" style="color: #2e7d32; text-decoration: none; font-weight: bold;">Se connecter</a>
         </p>
+    </div>
+</div>
+
+<div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content" style="border-radius: 15px; border: none; overflow: hidden;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #1a361c 0%, #2e7d32 100%); color: white;">
+                <h5 class="modal-title" id="termsModalLabel">
+                    <i class="fas fa-file-contract me-2"></i> Conditions Générales d'Utilisation
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="max-height: 400px; overflow-y: auto; color: #333; line-height: 1.6;">
+                <h6><strong>1. Objet du service</strong></h6>
+                <p>EnerGreen fournit des outils d'analyse de consommation énergétique et de calcul d'empreinte carbone basés sur les données saisies par l'utilisateur.</p>
+
+                <h6><strong>2. Collecte des données</strong></h6>
+                <p>En utilisant EnerGreen, vous acceptez la collecte de données relatives à votre logement (surface, type d'énergie) et vos habitudes de consommation afin de générer vos bilans personnalisés.</p>
+
+                <h6><strong>3. Confidentialité</strong></h6>
+                <p>Vos données sont strictement personnelles et ne sont jamais revendues à des tiers. Elles servent uniquement à améliorer votre expérience et la précision de nos calculs.</p>
+
+                <h6><strong>4. Responsabilité</strong></h6>
+                <p>Les calculs sont des estimations basées sur des moyennes nationales. EnerGreen ne peut être tenu responsable des écarts constatés sur vos factures réelles.</p>
+                
+                <p class="text-muted small mt-4">Dernière mise à jour : Janvier 2026</p>
+            </div>
+            <div class="modal-footer" style="background: #f8f9fa;">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                <button type="button" class="btn-energreen" data-bs-dismiss="modal" style="padding: 8px 20px;">J'ai compris</button>
+            </div>
+        </div>
     </div>
 </div>
 

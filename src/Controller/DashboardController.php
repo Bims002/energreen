@@ -13,45 +13,73 @@ use App\Entity\BilanCarbone;
 class DashboardController extends AbstractController
 {
     #[Route('/dashboard', name: 'app_dashboard')]
+    #[Route('/dashboard', name: 'app_dashboard')]
     public function index(EntityManagerInterface $entityManager): Response
     {
+        // 1. Vérification de la connexion
         $user = $this->getUser();
-        if (!$user)
+        if (!$user) {
             return $this->redirectToRoute('app_login');
+        }
 
+        // 2. Récupération des Repositories
         $consumptionRepo = $entityManager->getRepository(Consumption::class);
-        $latestConsumption = $consumptionRepo->findOneBy(['user' => $user], ['billing_date' => 'DESC']);
-
         $lodgmentRepo = $entityManager->getRepository(Lodgment::class);
+        $bilanRepo = $entityManager->getRepository(BilanCarbone::class);
+
+        // 3. Récupération du logement (Sera null si non rempli, ce qui déclenchera le flou dans Twig)
         $userLodgment = $lodgmentRepo->findOneBy(['user' => $user]);
 
-        $bilanRepo = $entityManager->getRepository(BilanCarbone::class);
-        $latestBilan = $bilanRepo->findOneBy(['utilisateur' => $user], ['createdAt' => 'DESC']);
+        // 4. Récupération des dernières données de consommation et bilan
+        $latestConsumption = $consumptionRepo->findOneBy(
+            ['user' => $user],
+            ['billing_date' => 'DESC']
+        );
 
-        $consumptionValue = $latestConsumption ? $latestConsumption->getPastConsumption() : 0;
+        $latestBilan = $bilanRepo->findOneBy(
+            ['utilisateur' => $user],
+            ['createdAt' => 'DESC']
+        );
 
-        // --- AJOUT UNIQUEMENT DE LA LOGIQUE DE NOTE ---
+        // 5. Préparation des variables de calcul (Valeurs par défaut à 0)
+        $kwh = $latestConsumption ? $latestConsumption->getTotalKwh() : 0;
+        $price = $latestConsumption ? $latestConsumption->getEstimatedPrice() : 0;
+
+        // 6. Calcul de la note Carbone (A à F)
         $rating = ['label' => '?', 'color' => '#6c757d'];
         if ($latestBilan) {
             $rating = $this->calculateCarbonGrade($latestBilan->getTotal());
         }
-        // ----------------------------------------------
 
+        // 7. Envoi de toutes les données à la vue Twig
         return $this->render('dashboard.html.twig', [
-            'has_data' => ($latestConsumption !== null),
-            'co2_emissions' => round($consumptionValue * 0.367),
-            'current_month_consumption' => $consumptionValue,
-            'current_month_cost' => $consumptionValue * 0.17,
+            // Indispensable pour la condition {% if user_lodgment is null %} dans votre Twig
             'user_lodgment' => $userLodgment,
+
+            // Utilisé pour la variable 'logement' que vous appelez ailleurs
+            'logement' => $userLodgment,
+            'consumption' => $latestConsumption,
+
+            // Variables d'état pour les graphiques
+            'has_data' => ($latestConsumption !== null),
+            'has_consumption' => ($latestConsumption !== null),
+
+            // Valeurs calculées pour les cartes
+            'current_month_consumption' => $kwh,
+            'current_month_cost' => $price,
+            'co2_emissions' => round($kwh * 0.367),
+
+            // Objets pour les détails
             'latest_consumption' => $latestConsumption,
             'latest_bilan' => $latestBilan,
-            'carbon_rating' => $rating, // Variable ajoutée
+            'carbon_rating' => $rating,
+
+            // Suggestions dynamiques
             'suggestions_carbone' => $this->generateDetailedSuggestions($latestBilan),
             'suggestions_elec' => $this->generateElectricSuggestions($latestConsumption),
         ]);
     }
 
-    // --- AJOUT DE LA MÉTHODE DE CALCUL ---
     private function calculateCarbonGrade(float $total): array
     {
         if ($total <= 5000)
@@ -69,21 +97,40 @@ class DashboardController extends AbstractController
 
     private function generateElectricSuggestions(?Consumption $cons): array
     {
-        if (!$cons || $cons->getPastConsumption() <= 0)
+        if (!$cons || $cons->getTotalKwh() <= 0)
             return [];
 
-        $kwh = $cons->getPastConsumption();
+        $kwh = $cons->getTotalKwh();
         $suggestions = [];
 
+        // 1. Suggestion basée sur le niveau de consommation (Fixe)
         if ($kwh > 400) {
             $suggestions['Consommation'] = "⚡ Votre consommation est au-dessus de la moyenne. Pensez à débrancher les appareils en veille.";
         } else {
             $suggestions['Consommation'] = "💡 Votre consommation est maîtrisée. Continuez ainsi !";
         }
 
-        $suggestions['Équipements'] = "🔌 Utilisez des multiprises à interrupteur pour couper vos équipements la nuit.";
-        $suggestions['Lavage'] = "🧺 Privilégiez les heures creuses et les cycles 'Éco' pour votre lave-linge.";
-        $suggestions['Éclairage'] = "💡 Si ce n'est pas déjà fait, passez toutes vos ampoules en LED.";
+        // 2. Bibliothèque de conseils (Rotation toutes les 10 minutes)
+        $conseilsPlus = [
+            "🔌 Utilisez des multiprises à interrupteur pour couper vos équipements la nuit.",
+            "🧺 Privilégiez les heures creuses et les cycles 'Éco' pour votre lave-linge.",
+            "💡 Si ce n'est pas déjà fait, passez toutes vos ampoules en LED.",
+            "🧊 Dégivrez votre congélateur : 3mm de givre = 30% de consommation en plus !",
+            "🥘 Couvrez vos casseroles pendant la cuisson pour économiser 25% d'énergie.",
+            "🌡️ Réglez votre chauffe-eau entre 55°C et 60°C pour limiter l'entartrage et la conso.",
+            "💻 Éteignez votre box internet la nuit : elle consomme autant qu'un petit frigo.",
+            "🧼 Nettoyez la grille arrière de votre frigo pour faciliter l'évacuation de la chaleur.",
+            "🚿 Installez un pommeau de douche économe pour réduire l'eau chaude à chauffer.",
+            "🍞 Utilisez un grille-pain plutôt que le four pour réchauffer du pain."
+        ];
+
+        // Logique de rotation : change l'index toutes les 600 secondes (10 min)
+        $indexRotation = floor(time() / 600) % count($conseilsPlus);
+        $suggestions['Le conseil du moment'] = $conseilsPlus[$indexRotation];
+
+        // Un deuxième conseil différent pour enrichir
+        $indexRotation2 = (floor(time() / 600) + 1) % count($conseilsPlus);
+        $suggestions['Astuce supplémentaire'] = $conseilsPlus[$indexRotation2];
 
         return $suggestions;
     }
@@ -94,70 +141,127 @@ class DashboardController extends AbstractController
             return [];
 
         $suggestions = [];
+        // Index calculé sur le temps (change toutes les 600 secondes / 10 min)
+        $timeIndex = (int) (time() / 600);
 
-        // Logement
+        // --- LOGEMENT ---
         $logement = $bilan->getLogement();
         if ($logement > 0) {
             if ($logement > 3000) {
-                $suggestions['Logement'] = "🏠 Impact élevé : Pensez à l'isolation des combles ou au double vitrage.";
+                $options = [
+                    "🏠 Impact élevé : L'isolation des combles peut réduire votre facture de 30%.",
+                    "🏠 Alerte Énergie : Le double vitrage est indispensable pour stopper les pertes de chaleur.",
+                    "🏠 Diagnostic : Vérifiez l'étanchéité de vos portes et fenêtres avec des joints isolants.",
+                    "🏠 Chauffage : Une pompe à chaleur émet 3x moins de CO2 qu'une chaudière gaz."
+                ];
+                $suggestions['Logement'] = $options[$timeIndex % count($options)];
             } elseif ($logement > 1500) {
-                $suggestions['Logement'] = "🏠 Impact modéré : Baissez le chauffage de 1°C pour économiser 7%.";
+                $options = [
+                    "🏠 Impact modéré : Baisser le chauffage de 1°C, c'est 7% d'économie sur l'année.",
+                    "🏠 Astuce : Installez des thermostats connectés pour mieux réguler vos pièces.",
+                    "🏠 Rappel : Fermez vos volets dès la tombée de la nuit pour garder la chaleur."
+                ];
+                $suggestions['Logement'] = $options[$timeIndex % count($options)];
             } else {
-                $suggestions['Logement'] = "🏠 Excellent : Votre logement consomme peu.";
+                $suggestions['Logement'] = "🏠 Excellent : Votre logement est une référence en efficacité !";
             }
         }
 
-        // Transports
+        // --- TRANSPORTS ---
         $transports = $bilan->getTransports();
         if ($transports > 0) {
             if ($transports > 4000) {
-                $suggestions['Transports'] = "🚗 Alerte : Le transport est votre plus gros poste. Privilégiez le train.";
+                $options = [
+                    "🚗 Alerte : Le transport est votre point faible. Le train émet 80x moins que l'avion.",
+                    "🚗 Mobilité : Avez-vous pensé au covoiturage pour vos trajets quotidiens ?",
+                    "🚗 Conseil : Une voiture électrique diviserait par 3 votre impact transport.",
+                    "🚗 Info : Réduire votre vitesse de 10km/h sur autoroute économise 1L/100km."
+                ];
+                $suggestions['Transports'] = $options[$timeIndex % count($options)];
             } elseif ($transports > 1500) {
-                $suggestions['Transports'] = "🚗 Impact moyen : Avez-vous pensé au vélo électrique pour les petits trajets ?";
+                $options = [
+                    "🚗 Impact moyen : Pour les trajets de moins de 5km, le vélo est plus rapide.",
+                    "🚗 Astuce : L'éco-conduite (freinages souples) réduit la conso de 15%.",
+                    "🚗 Idée : Testez les transports en commun au moins une fois par semaine."
+                ];
+                $suggestions['Transports'] = $options[$timeIndex % count($options)];
             } else {
-                $suggestions['Transports'] = "🚲 Bravo : Votre mobilité est exemplaire.";
+                $suggestions['Transports'] = "🚲 Bravo : Votre mobilité est exemplaire et sobre.";
             }
         }
 
-        // Alimentation
+        // --- ALIMENTATION ---
         $alimentation = $bilan->getAlimentation();
         if ($alimentation > 0) {
             if ($alimentation > 2500) {
-                $suggestions['Alimentation'] = "🥗 Impact fort : Réduire la viande rouge est le levier le plus efficace.";
+                $options = [
+                    "🥗 Impact fort : Remplacer un bœuf par du poulet divise l'impact par 4.",
+                    "🥗 Info : La viande rouge est responsable de 50% des émissions alimentaires.",
+                    "🥗 Défi : Essayez de cuisiner végétarien 3 jours par semaine.",
+                    "🥗 Astuce : Évitez les produits importés par avion (fraises hors saison, etc)."
+                ];
+                $suggestions['Alimentation'] = $options[$timeIndex % count($options)];
             } elseif ($alimentation > 1200) {
-                $suggestions['Alimentation'] = "🥗 Impact modéré : Privilégiez les fruits et légumes de saison.";
+                $options = [
+                    "🥗 Impact moyen : Privilégiez les circuits courts et les produits locaux.",
+                    "🥗 Info : Les produits de saison ont une empreinte carbone 10x plus faible.",
+                    "🥗 Conseil : Limitez le gaspillage alimentaire, c'est autant de CO2 économisé."
+                ];
+                $suggestions['Alimentation'] = $options[$timeIndex % count($options)];
             } else {
-                $suggestions['Alimentation'] = "🌱 Top : Votre alimentation est respectueuse.";
+                $suggestions['Alimentation'] = "🌱 Top : Votre assiette est un véritable allié pour le climat.";
             }
         }
 
-        // Numérique
+        // --- NUMÉRIQUE ---
         $num = $bilan->getNumerique();
         if ($num > 0) {
             if ($num > 800) {
-                $suggestions['Numérique'] = "💻 Impact élevé : Évitez le streaming 4K et gardez vos appareils plus longtemps.";
+                $options = [
+                    "💻 Impact élevé : Le streaming en 4G consomme 20x plus que le Wi-Fi.",
+                    "💻 Matériel : Garder son smartphone 4 ans au lieu de 2 divise son impact par 2.",
+                    "💻 Stockage : Supprimez vos mails inutiles et vos vidéos sur le cloud.",
+                    "💻 Astuce : Éteignez votre box internet la nuit pour économiser 30€/an."
+                ];
+                $suggestions['Numérique'] = $options[$timeIndex % count($options)];
             } else {
-                $suggestions['Numérique'] = "💻 Sobriété numérique : Bonne gestion de vos équipements.";
+                $options = [
+                    "💻 Sobriété : Votre usage numérique est responsable et maîtrisé.",
+                    "💻 Bravo : Vous faites partie des utilisateurs qui préservent leur matériel."
+                ];
+                $suggestions['Numérique'] = $options[$timeIndex % count($options)];
             }
         }
 
-        // Électroménager
+        // --- ÉLECTROMÉNAGER ---
         $electro = $bilan->getElectromenager();
         if ($electro > 0) {
             if ($electro > 400) {
-                $suggestions['Électroménager'] = "🔌 Conseil : Privilégiez les cycles 'Éco' à 30°C.";
+                $options = [
+                    "🔌 Conseil : Un lavage à 30°C consomme 3x moins qu'un cycle à 90°C.",
+                    "🔌 Frigo : Dépoussiérer la grille arrière de votre frigo réduit sa conso de 10%.",
+                    "🔌 Sèche-linge : C'est l'appareil le plus gourmand, privilégiez l'air libre.",
+                    "🔌 Lave-vaisselle : Utilisez le mode 'Eco', il est plus long mais bien plus sobre."
+                ];
+                $suggestions['Électroménager'] = $options[$timeIndex % count($options)];
             } else {
-                $suggestions['Électroménager'] = "🔌 Bien joué : Vos habitudes sont économes.";
+                $suggestions['Électroménager'] = "🔌 Bien joué : Vos habitudes de lavage sont très économes.";
             }
         }
 
-        // Textile
+        // --- TEXTILE ---
         $textile = $bilan->getTextile();
         if ($textile > 0) {
             if ($textile > 500) {
-                $suggestions['Textile'] = "👕 Mode : Votre impact est notable. Pensez à la seconde main.";
+                $options = [
+                    "👕 Mode : La fabrication d'un jean nécessite 7500 litres d'eau.",
+                    "👕 Conseil : Tournez-vous vers la seconde main (Vinted, Emmaüs, etc).",
+                    "👕 Info : Acheter 5 vêtements neufs de moins par an réduit l'impact de 200kg CO2.",
+                    "👕 Entretien : Lavez moins souvent vos vêtements pour les faire durer plus longtemps."
+                ];
+                $suggestions['Textile'] = $options[$timeIndex % count($options)];
             } else {
-                $suggestions['Textile'] = "👕 Durable : Vous privilégiez la qualité à la quantité.";
+                $suggestions['Textile'] = "👕 Durable : Vous privilégiez la qualité et la longévité de vos habits.";
             }
         }
 
