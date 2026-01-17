@@ -39,22 +39,67 @@
                                 <div class="bg-light p-2 rounded border border-warning mb-2">
                                     <div class="d-flex align-items-center justify-content-between">
                                         <small class="text-muted">Inclus :</small>
-                                        <button type="button" class="btn btn-outline-warning btn-info-circle">?</button>
+                                        <button type="button" class="btn btn-outline-warning btn-info-circle" data-bs-toggle="modal" data-bs-target="#modalVeille">?</button>
                                     </div>
                                     <span class="fw-bold text-dark small">Veille (18 kWh/mois)</span>
                                 </div>
 
                                 <div class="bg-light p-2 rounded border border-info mb-3">
-                                    <small class="text-muted d-block">Tarif appliqué :</small>
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <small class="text-muted">Tarif appliqué :</small>
+                                        <button type="button" class="btn btn-outline-info btn-info-circle" data-bs-toggle="modal" data-bs-target="#modalTarif">?</button>
+                                    </div>
                                     <span class="fw-bold text-dark small">0.25 € / kWh</span>
                                 </div>
 
-                                <div class="d-grid">
-                                    <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#addApplianceModal">
-                                        <i class="fas fa-plus"></i> Gérer mes appareils
-                                    </button>
+                                <div class="modal fade" id="modalVeille" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content text-dark">
+                                            <div class="modal-header bg-warning">
+                                                <h5 class="modal-title">Pourquoi 18 kWh de veille ?</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p>Même éteints, vos appareils consomment de l'énergie s'ils restent branchés. Nous incluons un forfait moyen de <strong>18 kWh par mois</strong> qui correspond à :</p>
+                                                <ul>
+                                                    <li>Votre box internet (allumée 24h/24)</li>
+                                                    <li>Les voyants LED de la TV et du four</li>
+                                                    <li>Les chargeurs laissés sur les prises</li>
+                                                    <li>Les horloges des appareils électroménagers</li>
+                                                </ul>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Fermer</button>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
+
+                                <div class="modal fade" id="modalTarif" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content text-dark">
+                                            <div class="modal-header bg-info text-white">
+                                                <h5 class="modal-title">Détails du tarif électrique</h5>
+                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p>Nous utilisons un tarif de <strong>0.25 € par kWh</strong> pour nos calculs.</p>
+                                                <p>Ce montant correspond au tarif réglementé moyen actuel en France (TTC). Il inclut l'abonnement et les taxes locales pour un foyer standard.</p>
+                                                <p class="small text-muted">Note : Ce prix peut varier selon votre fournisseur d'énergie et votre type de contrat (Heures Pleines / Heures Creuses).</p>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Fermer</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                    <div class="d-grid">
+                                        <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#addApplianceModal">
+                                            <i class="fas fa-plus"></i> Gérer mes appareils
+                                        </button>
+                                    </div>
+                                </div>
 
                             <div class="col-md-8">
                                 <form id="calcForm" onsubmit="event.preventDefault(); calculateConsumption();">
@@ -127,21 +172,28 @@
                 <div class="modal-body p-0" style="max-height: 450px; overflow-y: auto;">
                     <div class="list-group list-group-flush">
                         {% if allAppliances is defined %}
-                            {% for item in allAppliances %}
-                                <div class="list-group-item d-flex justify-content-between align-items-center py-2">
-                                    <div>
-                                        <span class="fw-bold d-block small">{{ item.name }}</span>
-                                        <small class="text-muted">{{ item.power }}W | {{ item.mode }}</small>
-                                    </div>
-                                    <form action="{{ path('appliance_toggle', {'id': item.id}) }}" method="POST">
-                                        <div class="form-check form-switch">
-                                            <input class="form-check-input" type="checkbox" 
-                                                   onchange="this.form.submit()" 
-                                                   {% if item in appliances %}checked{% endif %}>
+                            <div class="list-group list-group-flush">
+                                {% for item in allAppliances %}
+                                    <div class="list-group-item d-flex justify-content-between align-items-center py-2 text-dark">
+                                        <div>
+                                            <span class="fw-bold d-block small text-dark">{{ item.name }}</span>
+                                            <small class="text-muted">{{ item.power }}W | {{ item.mode }}</small>
                                         </div>
-                                    </form>
-                                </div>
-                            {% endfor %}
+                                        
+                                        <form action="{{ path('appliance_toggle', {'id': item.id}) }}" method="POST">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" 
+                                                    onchange="this.form.submit()" 
+                                                    {% if item.name in userApplianceNames %}checked{% endif %}>
+                                            </div>
+                                        </form>
+                                    </div>
+                                {% else %}
+                                    <div class="p-3 text-center text-muted">
+                                        Aucun appareil trouvé dans la base de données.
+                                    </div>
+                                {% endfor %}
+                            </div>
                         {% endif %}
                     </div>
                 </div>
@@ -181,5 +233,12 @@
         }
 
         window.onload = calculateConsumption;
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl)
+            })
+        });
     </script>
 {% endblock %}

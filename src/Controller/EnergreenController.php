@@ -53,26 +53,6 @@ final class EnergreenController extends AbstractController
         return $this->render('welcome.html.twig');
     }
 
-    #[Route('/dashboard', name: 'app_dashboard')]
-    public function dashboard(EntityManagerInterface $entityManager): Response
-    {
-        $user = $this->getUser();
-        if (!$user)
-            return $this->redirectToRoute('app_login');
-
-        $lodgment = $entityManager->getRepository(Lodgment::class)->findOneBy(['user' => $user], ['id' => 'DESC']);
-
-        // On récupère les deux listes nécessaires pour Twig
-        $currentAppliances = $lodgment ? $lodgment->getAppliances() : [];
-        $allAppliances = $entityManager->getRepository(Appliance::class)->findAll();
-
-        return $this->render('CalculatorConsumption.html.twig', [
-            'appliances' => $currentAppliances,
-            'allAppliances' => $allAppliances,
-            'lodgment' => $lodgment
-        ]);
-    }
-
     #[Route('/appliance/toggle/{id}', name: 'appliance_toggle', methods: ['POST'])]
     public function toggleAppliance(Appliance $appliance, EntityManagerInterface $entityManager): Response
     {
@@ -88,6 +68,6 @@ final class EnergreenController extends AbstractController
             $entityManager->flush();
         }
 
-        return $this->redirectToRoute('app_dashboard');
+        return $this->redirectToRoute('app_calculator_consumption');
     }
 }
