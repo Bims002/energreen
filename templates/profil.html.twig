@@ -96,21 +96,9 @@
 	<div class="profile-container">
 		<h1 class="profile-title">Mon Profil</h1>
 
-		<!-- Section de saisie du mot de passe -->
-		<div id="passwordSection">
-			<div class="lock-icon">
-				<i class="fas fa-lock"></i>
-			</div>
-			<p style="color: #666; margin-bottom: 20px;">Pour accéder à vos informations personnelles, veuillez saisir votre mot de passe</p>
-			<div class="form-group">
-				<input type="password" id="passwordInput" placeholder="Mot de passe" autocomplete="current-password">
-			</div>
-			<div id="errorMessage" class="alert alert-error" style="display: none;"></div>
-			<button class="btn-edit" onclick="verifyPassword()">Afficher mes informations</button>
-		</div>
 
-		<!-- Section des informations (cachée par défaut) -->
-		<div id="profileInfo" style="display: none;">
+		<!-- Section des informations -->
+		<div id="profileInfo">
 			{% if app.user %}
 				<div class="form-group">
 					<label>Email</label>
@@ -141,121 +129,9 @@
 					{{ app.user.createdAt|date('d/m/Y') }}
 				</p>
 
-				<div class="session-timer">
-					Les informations seront cachées après
-					<span id="timerDisplay">2:00</span>
-					d'inactivité
-				</div>
 
-				<p style="text-align: center; margin-top: 15px;">
-					<button class="btn-edit" onclick="lockProfile()" style="background-color: #dc3545; width: auto; padding: 10px 20px; display: inline-block;">
-						<i class="fas fa-lock me-2"></i>Verrouiller
-					</button>
-				</p>
 			{% endif %}
 		</div>
 	</div>
 
-	<script>
-		let inactivityTimer;
-let countdownTimer;
-let timeLeft = 120; // 2 minutes en secondes
-
-function verifyPassword() {
-const password = document.getElementById('passwordInput').value;
-const errorDiv = document.getElementById('errorMessage');
-
-if (! password) {
-errorDiv.textContent = 'Veuillez saisir votre mot de passe';
-errorDiv.style.display = 'block';
-return;
-}
-
-// Vérifier le mot de passe via AJAX
-fetch('{{ path('app_profile_verify_password') }}', {
-method: 'POST',
-headers: {
-'Content-Type': 'application/json',
-'X-Requested-With': 'XMLHttpRequest'
-},
-body: JSON.stringify(
-{password: password}
-)
-}).then(response => response.json()).then(data => {
-if (data.success) { // Mot de passe correct, afficher les informations
-document.getElementById('passwordSection').style.display = 'none';
-document.getElementById('profileInfo').style.display = 'block';
-document.getElementById('passwordInput').value = '';
-errorDiv.style.display = 'none';
-
-// Démarrer le timer d'inactivité
-startInactivityTimer();
-} else { // Mot de passe incorrect
-errorDiv.textContent = 'Mot de passe incorrect';
-errorDiv.style.display = 'block';
-document.getElementById('passwordInput').value = '';
-}
-}).catch(error => {
-errorDiv.textContent = 'Une erreur est survenue';
-errorDiv.style.display = 'block';
-});
-}
-
-function lockProfile() {
-document.getElementById('profileInfo').style.display = 'none';
-document.getElementById('passwordSection').style.display = 'block';
-clearTimeout(inactivityTimer);
-clearInterval(countdownTimer);
-timeLeft = 120;
-}
-
-function startInactivityTimer() {
-resetInactivityTimer();
-
-// Événements qui réinitialisent le timer
-document.addEventListener('mousemove', resetInactivityTimer);
-document.addEventListener('keypress', resetInactivityTimer);
-document.addEventListener('click', resetInactivityTimer);
-document.addEventListener('scroll', resetInactivityTimer);
-}
-
-function resetInactivityTimer() {
-clearTimeout(inactivityTimer);
-clearInterval(countdownTimer);
-timeLeft = 120;
-updateTimerDisplay();
-
-// Démarrer le compte à rebours visuel
-countdownTimer = setInterval(() => {
-timeLeft--;
-updateTimerDisplay();
-
-if (timeLeft <= 0) {
-clearInterval(countdownTimer);
-}
-}, 1000);
-
-// Timer principal qui cache les informations
-inactivityTimer = setTimeout(() => {
-lockProfile();
-clearInterval(countdownTimer);
-}, 120000); // 2 minutes
-}
-
-function updateTimerDisplay() {
-const minutes = Math.floor(timeLeft / 60);
-const seconds = timeLeft % 60;
-document.getElementById('timerDisplay').textContent = `${minutes}:${
-seconds.toString().padStart(2, '0')
-}`;
-}
-
-// Permettre de valider avec Enter
-document.getElementById('passwordInput').addEventListener('keypress', function (e) {
-if (e.key === 'Enter') {
-e.preventDefault();
-verifyPassword();
-}
-});
-	</script>
 {% endblock %}

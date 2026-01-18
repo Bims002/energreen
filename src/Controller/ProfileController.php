@@ -84,7 +84,15 @@ final class ProfileController extends AbstractController
 
         // Hashage du mot de passe s'il est modifié
         $newPassword = $request->request->get('new_password');
+        $confirmPassword = $request->request->get('confirm_password');
+
         if (!empty($newPassword)) {
+            // Vérifier que les deux mots de passe correspondent
+            if ($newPassword !== $confirmPassword) {
+                $this->addFlash('error', 'Les mots de passe ne correspondent pas.');
+                return $this->redirectToRoute('app_profile_edit');
+            }
+
             $hashedPassword = $hasher->hashPassword($user, $newPassword);
             $user->setPassword($hashedPassword);
         }
