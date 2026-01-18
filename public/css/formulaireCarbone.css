@@ -155,13 +155,13 @@ h5,
 
 
 .accordion-button {
-    background-color: #146919ff !important;
+    background-color: #493315 !important;
     color: #ffffff !important;
-    border-color: #146919ff !important;
+    border-color: #493315 !important;
 }
 
 .accordion-button:not(.collapsed) {
-    background-color: #146919ff !important;
+    background-color: #493315 !important;
     color: #ffffff !important;
 }
 
@@ -188,8 +188,8 @@ h5,
 }
 
 .btn-soft:hover {
-    background-color: #3b280f !important;
-    border-color: #3b280f !important;
+    background-color: #238932ff !important;
+    border-color: #238932ff !important;
     color: #ffffff !important;
 }
 

@@ -18,9 +18,9 @@
 		<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&family=Montserrat:wght@400;700&display=swap" rel="stylesheet"> {% block stylesheets %}{% endblock %}
 		<style>
 			.navbar-energreen {
-				background: linear-gradient(135deg, #1a361c 0%, #2e7d32 100%);
-				padding: 0.8rem 0;
+				background: linear-gradient(135deg, #112512ff 0%, #2e7d32 100%);
 				box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+				padding: 1.3rem 0;
 			}
 			.navbar-energreen .navbar-brand {
 				color: white !important;
@@ -34,6 +34,11 @@
 			}
 			.navbar-energreen .nav-link:hover {
 				color: white !important;
+			}
+			.navbar-energreen .nav-link.active {
+				color: white !important;
+				border-bottom: 3px solid white;
+				font-weight: 600;
 			}
 			.profile-dropdown .dropdown-toggle {
 				background: none;
@@ -101,7 +106,7 @@
 			<nav class="navbar navbar-expand-lg navbar-energreen">
 				<div class="container-fluid">
 					<a class="navbar-brand" href="{{ path('app_home') }}">
-						<img src="{{ asset('/images/logo-energreen.png') }}" alt="Energreen Logo" height="40">
+						<img src="{{ asset('/images/logo-energreen.png') }}" alt="Energreen Logo" height="30">
 					</a>
 					<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation" style="border-color: rgba(255,255,255,0.5);">
 						<span class="navbar-toggler-icon" style="filter: invert(1);"></span>
@@ -109,15 +114,15 @@
 					<div class="collapse navbar-collapse" id="navbarNav">
 						<ul class="navbar-nav me-auto">
 							<li class="nav-item">
-								<a class="nav-link" href="{{ path('app_dashboard') }}">Dashboard</a>
+								<a class="nav-link {{ app.request.attributes.get('_route') == 'app_dashboard' ? 'active' : '' }}" href="{{ path('app_dashboard') }}">Dashboard</a>
 							</li>
 
 							{% if app.user and app.user.lodgment is not null %}
 								<li class="nav-item">
-									<a class="nav-link" href="{{ path('app_calculator_consumption') }}">Consommation électrique</a>
+									<a class="nav-link {{ app.request.attributes.get('_route') == 'app_calculator_consumption' ? 'active' : '' }}" href="{{ path('app_calculator_consumption') }}">Consommation électrique</a>
 								</li>
 								<li class="nav-item">
-									<a class="nav-link" href="{{ path('app_formulaire') }}">Empreinte carbone</a>
+									<a class="nav-link {{ app.request.attributes.get('_route') == 'app_formulaire' ? 'active' : '' }}" href="{{ path('app_formulaire') }}">Empreinte carbone</a>
 								</li>
 							{% endif %}
 						</ul>

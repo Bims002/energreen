@@ -1,425 +1,478 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}EnerGreen - Tableau de bord{% endblock %}
-
-{% block stylesheets %}
-<style>
-    :root {
-        --vert-energreen: #1a3020; 
-        --marron-energreen: #493315;
-        --gris-fond: #f4f7f6;
-        --blanc: #ffffff;
-    }
-
-    body {
-        font-family: 'Montserrat', sans-serif;
-        background-color: var(--gris-fond);
-        color: var(--vert-energreen);
-    }
-
-    h1, h2 {
-        font-family: 'Roboto', sans-serif;
-        text-transform: uppercase;
-    }
-
-    .dashboard-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 20px;
-        padding: 20px;
-        max-width: 1200px;
-        margin: auto;
-    }
-
-    .card {
-        background: var(--blanc);
-        border-radius: 10px;
-        padding: 20px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-    }
-
-    .span-2 { grid-column: span 2; }
-    .span-3 { grid-column: span 3; }
-
-    .btn-energreen {
-        background-color: var(--vert-energreen);
-        color: white;
-        padding: 10px 20px;
-        border-radius: 5px;
-        text-decoration: none;
-        font-weight: bold;
-        border: none;
-        transition: opacity 0.3s;
-    }
-
-    .btn-energreen-dark {
-        background-color: var(--vert-energreen);
-        color: white !important;
-        padding: 6px 15px;
-        border-radius: 4px;
-        text-decoration: none;
-        font-weight: 600;
-        font-size: 0.85rem;
-        border: none;
-        display: inline-block;
-        transition: opacity 0.2s;
-    }
-
-    .btn-energreen:hover, .btn-energreen-dark:hover {
-        opacity: 0.9;
-        color: white;
-    }
-
-    .nav-pills .nav-link {
-        background-color: #f0f2f0;
-        color: var(--vert-energreen);
-        border: 1px solid var(--vert-energreen);
-        margin-left: 5px;
-        font-weight: 600;
-        transition: all 0.3s;
-    }
-
-    .nav-pills .nav-link.active {
-        background-color: var(--vert-energreen) !important;
-        color: white !important;
-        border-color: var(--vert-energreen);
-    }
-
-    .toggle-bar {
-        background: #eee;
-        border-radius: 5px;
-        padding: 5px;
-        display: inline-block;
-    }
-
-    .toggle-bar span {
-        padding: 5px 15px;
-        cursor: pointer;
-        border-radius: 3px;
-        font-size: 0.9rem;
-    }
-
-    .toggle-bar .active {
-        background: var(--marron-energreen);
-        color: white;
-    }
-
-    /* Badge de Note A-F */
-    .carbon-grade-badge {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 35px;
-        height: 35px;
-        border-radius: 6px;
-        color: white;
-        font-weight: 800;
-        margin-left: 10px;
-        vertical-align: middle;
-    }
-
-    /* EFFET DE FLOU POUR LE DASHBOARD BLOQUÉ */
-    .dashboard-locked {
-        filter: blur(8px);
-        pointer-events: none; 
-        user-select: none;    
-        opacity: 0.6;
-        transition: all 0.5s ease;
-    }
-
-    .onboarding-active {
-        position: relative;
-        z-index: 10;
-        border: 2px solid #2ecc71 !important;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important;
-    }
-</style>
+{% block title %}EnerGreen - Tableau de bord
 {% endblock %}
 
-{% block body %}
+{% block stylesheets %}
+	<style>:root
+	{
+		--vert-energreen: #1a3020;
+		--marron-energreen: #493315;
+		--gris-fond: #f4f7f6;
+		--blanc: #ffffff;
+	}
+
+	body {
+		font-family: 'Montserrat', sans-serif;
+		background-color: var(--gris-fond);
+		color: var(--vert-energreen);
+	}
+
+	h1,
+	h2 {
+		font-family: 'Roboto', sans-serif;
+	}
+
+	.dashboard-grid {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 20px;
+		padding: 20px;
+		max-width: 1200px;
+		margin: auto;
+	}
+
+	.card {
+		background: var(--blanc);
+		border-radius: 10px;
+		padding: 20px;
+		box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+	}
+
+	.span-2 {
+		grid-column: span 2;
+	}
+	.span-3 {
+		grid-column: span 3;
+	}
+
+	.btn-energreen {
+		background-color: var(--vert-energreen);
+		color: white;
+		padding: 10px 20px;
+		border-radius: 5px;
+		text-decoration: none;
+		font-weight: bold;
+		border: none;
+		transition: opacity 0.3s;
+	}
+
+	.btn-energreen-dark {
+		background-color: var(--vert-energreen);
+		color: white !important;
+		padding: 6px 15px;
+		border-radius: 4px;
+		text-decoration: none;
+		font-weight: 600;
+		font-size: 0.85rem;
+		border: none;
+		display: inline-block;
+		transition: opacity 0.2s;
+	}
+
+	.btn-energreen:hover,
+	.btn-energreen-dark:hover {
+		opacity: 0.9;
+		color: white;
+	}
+
+	.nav-pills .nav-link {
+		background-color: #f0f2f0;
+		color: var(--vert-energreen);
+		border: 1px solid var(--vert-energreen);
+		margin-left: 5px;
+		font-weight: 600;
+		transition: all 0.3s;
+	}
+
+	.nav-pills .nav-link.active {
+		background-color: var(--vert-energreen) !important;
+		color: white !important;
+		border-color: var(--vert-energreen);
+	}
+
+	.toggle-bar {
+		background: #eee;
+		border-radius: 5px;
+		padding: 2px 3px;
+		display: inline-flex;
+		align-items: center;
+		white-space: nowrap;
+	}
+
+	.toggle-bar span {
+		display: inline-block;
+		vertical-align: middle;
+		padding: 3px 12px;
+		cursor: pointer;
+		border-radius: 2px;
+		font-size: 0.85rem;
+	}
+
+	.toggle-bar .active {
+		background: var(--marron-energreen);
+		color: white;
+	}
+
+	/* Badge de Note A-F */
+	.carbon-grade-badge {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 35px;
+		height: 35px;
+		border-radius: 6px;
+		color: white;
+		font-weight: 800;
+		margin-left: 10px;
+		vertical-align: middle;
+	}
+
+	/* EFFET DE FLOU POUR LE DASHBOARD BLOQUÉ */
+	.dashboard-locked {
+		filter: blur(8px);
+		pointer-events: none;
+		user-select: none;
+		opacity: 0.6;
+		transition: all 0.5s ease;
+	}
+
+	.onboarding-active {
+		position: relative;
+		z-index: 10;
+		border: 2px solid #2ecc71 !important;
+		box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1) !important;
+	}
+</style>{% endblock %}{% block body %}
 
 {% for message in app.flashes('success') %}
-    <div class="alert alert-success alert-dismissible fade show mx-auto" role="alert" style="max-width: 1200px; margin-top: 20px;">
-        <strong>✓</strong> {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
+	<div class="alert alert-success alert-dismissible fade show mx-auto" role="alert" style="max-width: 1200px; margin-top: 20px;">
+		<strong>✓</strong>
+		{{ message }}
+		<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+	</div>
 {% endfor %}
 
-<div class="dashboard-grid">
-    {# SECTION GÉRER LES DONNÉES - Toujours nette si logement est null #}
-    {% if logement is null %}
-        <section class="card span-3 onboarding-active" style="display: flex; justify-content: space-between; align-items: center; background: #f0f4f1;">
-            <div>
-                <h2 style="color: #27ae60; margin: 0;">Gérer vos données</h2>
-                <p style="margin: 5px 0 0 0;">Saisissez vos données de consommation pour débloquer votre analyse.</p>
-            </div>
-            <a href="{{ path('app_energreen_welcome') }}" class="btn-energreen">Saisir vos données</a>
-        </section>
-    {% endif %}
+<div
+	class="dashboard-grid">
+	{# SECTION GÉRER LES DONNÉES - Toujours nette si logement est null #}
+	{% if logement is null %}
+		<section class="card span-3 onboarding-active" style="display: flex; justify-content: space-between; align-items: center; background: #f0f4f1;">
+			<div>
+				<h2 style="color: #27ae60; margin: 0;">Gérer vos données</h2>
+				<p style="margin: 5px 0 0 0;">Saisissez vos données de consommation pour débloquer votre analyse.</p>
+			</div>
+			<a href="{{ path('app_energreen_welcome') }}" class="btn-energreen">Saisir vos données</a>
+		</section>
+	{% endif %}
 
-    {# LE RESTE DU DASHBOARD - Mis dans une sous-grille pour appliquer le flou facilement #}
-    <div class="span-3 dashboard-grid {{ logement is null ? 'dashboard-locked' : '' }}" style="padding: 0; margin: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
-        
-        {# Graphique Consommation Électrique #}
-        <section class="card span-2">
-            <div style="display: flex; justify-content: space-between;">
-                <div>
-                    <h2>Historique de la consommation</h2>
-                    <p>Aperçu de votre consommation électrique</p>
-                </div>
-                <div class="toggle-bar">
-                    <span>Jour</span>
-                    <span>Semaine</span>
-                    <span class="active">Mois</span>
-                </div>
-            </div>
-            <div style="height: 250px; background: #fafafa; margin-top: 20px; border: 1px solid #eee; padding: 10px;">
-                <canvas id="consumptionChart"></canvas>
-            </div>
-        </section>
+	{# LE RESTE DU DASHBOARD - Mis dans une sous-grille pour appliquer le flou facilement #}
+	<div
+		class="span-3 dashboard-grid {{ logement is null ? 'dashboard-locked' : '' }}" style="padding: 0; margin: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
 
-        {# Section Suggestions personnalisés #}
-        <section class="card">
-            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px;">
-                <h2 style="margin: 0; font-size: 1.2rem;">Suggestions</h2>
-                
-                <ul class="nav nav-pills" id="suggestionTabs" role="tablist">
-                    <li class="nav-item">
-                        <button class="nav-link active py-1 px-3" id="carbone-tab" data-bs-toggle="pill" data-bs-target="#tab-carbone" type="button" style="font-size: 0.8rem;">Impact Carbone</button>
-                    </li>
-                    <li class="nav-item">
-                        <button class="nav-link py-1 px-3" id="elec-tab" data-bs-toggle="pill" data-bs-target="#tab-elec" type="button" style="font-size: 0.8rem;">Électricité</button>
-                    </li>
-                </ul>
-            </div>
+		{# Graphique Consommation Électrique #}
+		<section class="card span-2">
+			<div style="display: flex; justify-content: space-between;">
+				<div>
+					<h2 style="font-size: 1.4rem">Historique de la consommation</h2>
+					<p>Aperçu de votre consommation électrique</p>
+				</div> 
+				<div class="toggle-bar">
+					<span>Jour</span>
+					<span>Semaine</span>
+					<span class="active">Mois</span>
+				</div>
+			</div>
+			<div style="height: 250px; background: #fafafa; margin-top: 20px; border: 1px solid #eee; padding: 10px;">
+				<canvas id="consumptionChart"></canvas>
+			</div>
+		</section>
 
-            <div class="tab-content">
-                <div class="tab-pane fade show active" id="tab-carbone" role="tabpanel">
-                    <div style="display: flex; flex-direction: column; gap: 10px;">
-                        {% if suggestions_carbone is defined and suggestions_carbone is not empty %}
-                            {% for categorie, message in suggestions_carbone|slice(0, 3) %}
-                                <div style="padding: 10px; border-radius: 8px; background: #f8faf9; border-left: 5px solid var(--vert-energreen);">
-                                    <small><strong>{{ categorie }}</strong></small>
-                                    <p style="margin: 0; font-size: 0.85em; color: #555;">{{ message }}</p>
-                                </div>
-                            {% endfor %}
-                            {% if suggestions_carbone|length > 3 %}
-                                <button class="btn-energreen-dark mt-2" data-bs-toggle="modal" data-bs-target="#suggestionsModal">
-                                    Voir tout le bilan ({{ suggestions_carbone|length }} suggestions)
-                                </button>
-                            {% endif %}
-                        {% else %}
-                            <p class="text-muted small">Aucun bilan trouvé. <a href="{{ path('app_formulaire') }}">Calculer mon impact</a>.</p>
-                        {% endif %}
-                    </div>
-                </div>
+		{# Section Suggestions personnalisés #}
+		<section class="card">
+			<div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px;">
+				<h2 style="margin: 0; font-size: 1.2rem;">Suggestions</h2>
 
-                <div class="tab-pane fade" id="tab-elec" role="tabpanel">
-                    <div style="display: flex; flex-direction: column; gap: 10px;">
-                        {% if suggestions_elec is defined and suggestions_elec is not empty %}
-                            {% for titre, message in suggestions_elec %}
-                                <div style="padding: 10px; border-radius: 8px; background: #f0f7ff; border-left: 5px solid #007bff;">
-                                    <small><strong style="color: #007bff;">{{ titre }}</strong></small>
-                                    <p style="margin: 0; font-size: 0.85em; color: #555;">{{ message }}</p>
-                                </div>
-                            {% endfor %}
-                        {% else %}
-                            <p class="text-muted small">Saisissez vos consommations pour voir toutes les suggestions.</p>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-        </section>
+				<div class="toggle-bar">
+					<span class="active" data-bs-toggle="pill" data-bs-target="#tab-carbone">Impact Carbone</span>
+					<span data-bs-toggle="pill" data-bs-target="#tab-elec">Électricité</span>
+				</div>
+			</div>
 
-        {# IMPACT CARBONE GLOBAL #}
-        <section class="card">
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
-                <h2 style="margin: 0;">Impact Global</h2>
-            </div>
+			<div class="tab-content">
+				<div class="tab-pane fade show active" id="tab-carbone" role="tabpanel">
+					<div style="display: flex; flex-direction: column; gap: 10px;">
+						{% if suggestions_carbone is defined and suggestions_carbone is not empty %}
+							{% for categorie, message in suggestions_carbone|slice(0, 3) %}
+								<div style="padding: 10px; border-radius: 8px; background: #f8faf9; border-left: 5px solid var(--vert-energreen);">
+									<small>
+										<strong>{{ categorie }}</strong>
+									</small>
+									<p style="margin: 0; font-size: 0.85em; color: #555;">{{ message }}</p>
+								</div>
+							{% endfor %}
+							{% if suggestions_carbone|length > 3 %}
+								<button class="btn-energreen-dark mt-2" data-bs-toggle="modal" data-bs-target="#suggestionsModal">
+									Voir tout le bilan ({{ suggestions_carbone|length }}
+									suggestions)
+								</button>
+							{% endif %}
+						{% else %}
+							<p class="text-muted small">Aucun bilan trouvé.
+								<a href="{{ path('app_formulaire') }}">Calculer mon impact</a>.</p>
+						{% endif %}
+					</div>
+				</div>
 
-            {% if latest_bilan %}
-                <div style="height: 200px; margin: 10px 0;">
-                    <canvas id="impactChart"></canvas>
-                </div>
-                
-                <ul style="list-style: none; padding: 0; margin-top: 10px; font-size: 0.9em;">
-                    <li style="border-bottom: 1px solid #eee; padding: 5px 0;">
-                        <strong>Total : {{ latest_bilan.total|number_format(0, ',', ' ') }} kg CO2/an</strong>
-                    </li>
-                    
-                    {% if carbon_rating is defined %}
-                        <li style="padding: 10px 0; display: flex; align-items: center; gap: 10px;">
-                            <span style="color: #555;">Votre score écologique :</span>
-                            <div class="carbon-grade-badge" style="background-color: {{ carbon_rating.color }}; margin-left: 0;">
-                                {{ carbon_rating.label }}
-                            </div>
-                        </li>
-                        <li style="padding-bottom: 10px;">
-                            <p style="margin: 0; font-size: 0.9em; font-style: italic; color: {{ carbon_rating.color }}; font-weight: 600;">
-                                « Vous avez une note de {{ carbon_rating.label }}, 
-                                {% if carbon_rating.label == 'A' or carbon_rating.label == 'B' %}
-                                    bravo pour vos efforts !
-                                {% elseif carbon_rating.label == 'C' or carbon_rating.label == 'D' %}
-                                    vous êtes sur la bonne voie.
-                                {% else %}
-                                    des améliorations sont possibles.
-                                {% endif %} »
-                            </p>
-                        </li>
-                    {% endif %}
+				<div class="tab-pane fade" id="tab-elec" role="tabpanel">
+					<div style="display: flex; flex-direction: column; gap: 10px;">
+						{% if suggestions_elec is defined and suggestions_elec is not empty %}
+							{% for titre, message in suggestions_elec %}
+								<div style="padding: 10px; border-radius: 8px; background: #f0f7ff; border-left: 5px solid #007bff;">
+									<small>
+										<strong style="color: #007bff;">{{ titre }}</strong>
+									</small>
+									<p style="margin: 0; font-size: 0.85em; color: #555;">{{ message }}</p>
+								</div>
+							{% endfor %}
+						{% else %}
+							<p class="text-muted small">Saisissez vos consommations pour voir toutes les suggestions.</p>
+						{% endif %}
+					</div>
+				</div>
+			</div>
+		</section>
 
-                    <li style="padding: 5px 0; color: #666; border-top: 1px solid #eee;">
-                        <small>Dernier calcul le {{ latest_bilan.createdAt|date('d/m/Y') }}</small>
-                    </li>
-                    
-                    <div style="text-align: center; padding: 15px 0;">
-                        <a href="{{ path('app_formulaire') }}" class="btn-energreen" style="font-size: 0.8em;">Recalculer mon empreinte</a>
-                    </div>
-                </ul>
-            {% else %}
-                <div style="text-align: center; padding: 20px;">
-                    <p>Aucun bilan complet trouvé.</p>
-                    <a href="{{ path('app_formulaire') }}" class="btn-energreen" style="font-size: 0.8em;">Calculer mon empreinte</a>
-                </div>
-            {% endif %}
-        </section>
+		{# IMPACT CARBONE GLOBAL #}
+		<section class="card">
+			<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+				<h2 style="margin: 0; font-size: 1.4rem">Impact Global</h2>
+			</div>
 
-        {# Coût et Consommation #}
-        <section class="card shadow-sm border-0 p-3">
-            <h2 class="h5 fw-bold mb-3">Coût et consommation</h2>
-            <div class="mt-3">
-                <div class="mb-3">
-                    <span class="d-block text-muted small text-uppercase lh-1">Coût estimé (Mois)</span>
-                    <span class="h2 fw-bold text-success">
-                        {% if consumption and consumption.estimatedPrice is not null %}
-                            {{ consumption.estimatedPrice|number_format(2, ',', ' ') }} €
-                        {% else %}
-                            0,00 €
-                        {% endif %}
-                    </span>
-                </div>
-                <div>
-                    <span class="d-block text-muted small text-uppercase lh-1">Consommation estimée</span>
-                    <span class="h4 fw-bold">
-                        {% if consumption and consumption.totalKwh is not null %}
-                            {{ consumption.totalKwh|number_format(2, ',', ' ') }} kWh
-                        {% else %}
-                            0 kWh
-                        {% endif %}
-                    </span>
-                </div>
-            </div>
-            
-            {% if consumption %}
-                <div class="mt-2 border-top pt-2">
-                    <small class="text-muted">
-                        Dernière mise à jour : {{ consumption.billingDate|date('d/m/Y') }}
-                    </small>
-                    <div style="text-align: center; padding: 15px 0;">
-                        <a href="{{ path('app_formulaire') }}" class="btn-energreen" style="font-size: 0.8em;">Recalculer ma consommation</a>
-                    </div>
-                </div>
-            {% endif %}
-        </section>
+			{% if latest_bilan %}
+				<div style="height: 200px; margin: 10px 0;">
+					<canvas id="impactChart"></canvas>
+				</div>
 
-        {# Alertes #}
-        <section class="card">
-            <h2>Alertes Intelligentes</h2>
-            <p style="color: #666;">Aucune alerte pour le moment. Votre consommation est stable.</p>
-        </section>
-    </div>
+				<ul style="list-style: none; padding: 0; margin-top: 10px; font-size: 0.9em;">
+					<li style="border-bottom: 1px solid #eee; padding: 5px 0;">
+						<strong>Total :
+							{{ latest_bilan.total|number_format(0, ',', ' ') }}
+							kg CO2/an</strong>
+					</li>
+
+					{% if carbon_rating is defined %}
+						<li style="padding: 10px 0; display: flex; align-items: center; gap: 10px;">
+							<span style="color: #555;">Votre score écologique :</span>
+							<div class="carbon-grade-badge" style="background-color: {{ carbon_rating.color }}; margin-left: 0;">
+								{{ carbon_rating.label }}
+							</div>
+						</li>
+						<li style="padding-bottom: 10px;">
+							<p style="margin: 0; font-size: 0.9em; font-style: italic; color: {{ carbon_rating.color }}; font-weight: 600;">
+								« Vous avez une note de
+								{{ carbon_rating.label }},
+								{% if carbon_rating.label == 'A' or carbon_rating.label == 'B' %}
+									bravo pour vos efforts !
+								{% elseif carbon_rating.label == 'C' or carbon_rating.label == 'D' %}
+									vous êtes sur la bonne voie.
+								{% else %}
+									des améliorations sont possibles.
+								{% endif %}
+								»
+							</p>
+						</li>
+					{% endif %}
+
+					<li style="padding: 5px 0; color: #666; border-top: 1px solid #eee;">
+						<small>Dernier calcul le
+							{{ latest_bilan.createdAt|date('d/m/Y') }}</small>
+					</li>
+
+					<div style="text-align: center; padding: 15px 0;">
+						<a href="{{ path('app_formulaire') }}" class="btn-energreen" style="font-size: 0.8em;">Recalculer mon empreinte</a>
+					</div>
+				</ul>
+			{% else %}
+				<div style="text-align: center; padding: 20px;">
+					<p>Aucun bilan complet trouvé.</p>
+					<a href="{{ path('app_formulaire') }}" class="btn-energreen" style="font-size: 0.8em;">Calculer mon empreinte</a>
+				</div>
+			{% endif %}
+		</section>
+
+		{# Coût et Consommation #}
+		<section class="card">
+			<h2 style="font-size: 1.4rem">Coût et consommation</h2>
+			<div class="mt-3">
+				<div class="mb-3">
+					<span class="d-block text-muted small text-uppercase lh-1">Coût estimé (Mois)</span>
+					<span class="h2 fw-bold text-success">
+						{% if consumption and consumption.estimatedPrice is not null %}
+							{{ consumption.estimatedPrice|number_format(2, ',', ' ') }}
+							€
+						{% else %}
+							0,00 €
+						{% endif %}
+					</span>
+				</div>
+				<div>
+					<span class="d-block text-muted small text-uppercase lh-1">Consommation estimée</span>
+					<span class="h4 fw-bold">
+						{% if consumption and consumption.totalKwh is not null %}
+							{{ consumption.totalKwh|number_format(2, ',', ' ') }}
+							kWh
+						{% else %}
+							0 kWh
+						{% endif %}
+					</span>
+				</div>
+			</div>
+
+			{% if consumption %}
+				<div class="mt-2 border-top pt-2">
+					<small class="text-muted">
+						Dernière mise à jour :
+						{{ consumption.billingDate|date('d/m/Y') }}
+					</small>
+					<div style="text-align: center; padding: 15px 0;">
+						<a href="{{ path('app_formulaire') }}" class="btn-energreen" style="font-size: 0.8em;">Recalculer ma consommation</a>
+					</div>
+				</div>
+			{% endif %}
+		</section>
+
+		{# Alertes #}
+		<section class="card">
+			<h2 style="font-size: 1.4rem">Alertes Intelligentes</h2>
+			<p style="color: #666;">Aucune alerte pour le moment. Votre consommation est stable.</p>
+		</section>
+	</div>
 </div>
 
 {# MODALE #}
 {% if suggestions_carbone is defined and suggestions_carbone|length > 3 %}
-<div class="modal fade" id="suggestionsModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header" style="background: var(--vert-energreen); color: white;">
-                <h5 class="modal-title">Tous vos conseils Carbone</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                {% for categorie, message in suggestions_carbone %}
-                    <div class="mb-3 p-2" style="border-bottom: 1px solid #eee;">
-                        <strong style="color: var(--vert-energreen);">{{ categorie }}</strong>
-                        <p class="small mb-0">{{ message }}</p>
-                    </div>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
-</div>
-{% endif %}
-
-{% endblock %}
-
-{% block javascripts %}
+	<div class="modal fade" id="suggestionsModal" tabindex="-1" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content">
+				<div class="modal-header" style="background: var(--vert-energreen); color: white;">
+					<h5 class="modal-title">Tous vos conseils Carbone</h5>
+					<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+				</div>
+				<div class="modal-body">
+					{% for categorie, message in suggestions_carbone %}
+						<div class="mb-3 p-2" style="border-bottom: 1px solid #eee;">
+							<strong style="color: var(--vert-energreen);">{{ categorie }}</strong>
+							<p class="small mb-0">{{ message }}</p>
+						</div>
+					{% endfor %}
+				</div>
+			</div>
+		</div>
+	</div>
+{% endif %}{% endblock %}{% block javascripts %}
 {{ parent() }}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        
-        // --- GRAPHIQUE LINÉAIRE ---
-        const ctx = document.getElementById('consumptionChart');
-        if (ctx) {
-            const dataMois = {
-                labels: ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'],
-                datasets: [{
-                    label: 'kWh',
-                    data: [85, 90, 78, 87],
-                    borderColor: '#1a361c',
-                    backgroundColor: 'rgba(26, 54, 28, 0.1)',
-                    fill: true,
-                    tension: 0.4
-                }]
-            };
+	document.addEventListener('DOMContentLoaded', function () { // --- GRAPHIQUE LINÉAIRE ---
+const ctx = document.getElementById('consumptionChart');
+if (ctx) {
+const dataMois = {
+labels: [
+'Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'
+],
+datasets: [
+{
+label: 'kWh',
+data: [
+85, 90, 78, 87
+],
+borderColor: '#1a361c',
+backgroundColor: 'rgba(26, 54, 28, 0.1)',
+fill: true,
+tension: 0.4
+}
+]
+};
 
-            new Chart(ctx.getContext('2d'), {
-                type: 'line',
-                data: dataMois,
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } }
-                }
-            });
-        }
+new Chart(ctx.getContext('2d'), {
+type: 'line',
+data: dataMois,
+options: {
+responsive: true,
+maintainAspectRatio: false,
+plugins: {
+legend: {
+display: false
+}
+}
+}
+});
+}
 
-        // --- GRAPHIQUE CAMEMBERT ---
-        {% if latest_bilan %}
-            const ctxImpact = document.getElementById('impactChart');
-            if (ctxImpact) {
-                new Chart(ctxImpact.getContext('2d'), {
-                    type: 'pie',
-                    data: {
-                        labels: ['Logement', 'Numérique', 'Alimentation', 'Transports', 'Électroménager', 'Textile'],
-                        datasets: [{
-                            data: [
-                                {{ latest_bilan.logement }},
-                                {{ latest_bilan.numerique }},
-                                {{ latest_bilan.alimentation }},
-                                {{ latest_bilan.transports }},
-                                {{ latest_bilan.electromenager }},
-                                {{ latest_bilan.textile }}
-                            ],
-                            backgroundColor: ['#00d60eff', '#401ddbff', '#f0f01dff', '#e82222ff', '#31ece5ff', '#ea32f1ff'],
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: 'right',
-                                labels: { boxWidth: 12, font: { size: 10 } }
-                            }
-                        }
-                    }
-                });
-            }
-        {% endif %}
-    });
-</script>
-{% endblock %}
+// --- GRAPHIQUE CAMEMBERT ---
+{% if latest_bilan %}
+const ctxImpact = document.getElementById('impactChart');
+if (ctxImpact) {
+new Chart(ctxImpact.getContext('2d'), {
+type: 'pie',
+data: {
+labels: [
+'Logement',
+'Numérique',
+'Alimentation',
+'Transports',
+'Électroménager',
+'Textile'
+],
+datasets: [
+{
+data: [
+{{ latest_bilan.logement }},
+{{ latest_bilan.numerique }},
+{{ latest_bilan.alimentation }},
+{{ latest_bilan.transports }},
+{{ latest_bilan.electromenager }},
+{{ latest_bilan.textile }}
+],
+backgroundColor: [
+'#00d60eff',
+'#401ddbff',
+'#f0f01dff',
+'#e82222ff',
+'#31ece5ff',
+'#ea32f1ff'
+],
+borderWidth: 1
+}
+]
+},
+options: {
+responsive: true,
+maintainAspectRatio: false,
+plugins: {
+legend: {
+position: 'right',
+labels: {
+boxWidth: 12,
+font: {
+size: 10
+}
+}
+}
+}
+}
+});
+}
+{% endif %}
+});
+
+// Gestion des clics sur les toggle-bar spans
+document.querySelectorAll('.toggle-bar span').forEach(span => {
+span.addEventListener('click', function () { // Retirer la classe active de tous les spans du même parent
+this.parentElement.querySelectorAll('span').forEach(s => s.classList.remove('active'));
+// Ajouter la classe active au span cliqué
+this.classList.add('active');
+});
+});
+</script>{% endblock %}

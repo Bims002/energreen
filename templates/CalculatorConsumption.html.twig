@@ -1,282 +1,338 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Consommation électrique{% endblock %}
+{% block title %}Consommation électrique
+{% endblock %}
 
 {% block body %}
-    <style>
-        body { font-size: 0.85rem; }
-        .bg-form { background-color: #493315 !important; color: white; }
-        .result-span { font-size: 0.95rem; font-weight: bold; }
-        .appliance-name { font-size: 0.9rem; font-weight: 600; }
-        .qty-container {
-            display: flex; align-items: center; background: #f8f9fa;
-            padding: 2px 6px; border-radius: 4px; border: 1px solid #dee2e6;
-        }
-        .qty-input {
-            width: 35px; border: none; background: transparent;
-            text-align: center; font-weight: bold; font-size: 0.8rem;
-        }
-        .btn-info-circle {
-            width: 16px; height: 16px; border-radius: 50%; padding: 0;
-            line-height: 14px; font-size: 0.65rem; font-weight: bold;
-            display: inline-flex; align-items: center; justify-content: center;
-        }
-    </style>
+	<style>
+		.container {
+			font-size: 0.85rem;
+		}
+		.bg-form {
+			background-color: #493315 !important;
+			color: white;
+		}
+		.result-span {
+			font-size: 0.95rem;
+			font-weight: bold;
+		}
+		.appliance-name {
+			font-size: 0.9rem;
+			font-weight: 600;
+		}
+		.qty-container {
+			display: flex;
+			align-items: center;
+			background: #f8f9fa;
+			padding: 2px 6px;
+			border-radius: 4px;
+			border: 1px solid #dee2e6;
+		}
+		.qty-input {
+			width: 35px;
+			border: none;
+			background: transparent;
+			text-align: center;
+			font-weight: bold;
+			font-size: 0.8rem;
+		}
+		.btn-info-circle {
+			width: 16px;
+			height: 16px;
+			border-radius: 50%;
+			padding: 0;
+			line-height: 14px;
+			font-size: 0.65rem;
+			font-weight: bold;
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+		}
+	</style>
 
-    <div class="container mt-4">
-        <div class="row justify-content-center">
-            <div class="col-md-11">
-                <div class="card shadow-sm border-0">
-                    <div class="card-header bg-form text-white text-center py-2">
-                        <h5 class="mb-0">Calculer votre consommation électrique</h5>
-                    </div>
-                    
-                    <div class="card-body p-4">
-                        <div class="row">
-                            {# --- COLONNE GAUCHE : RÉSUMÉ --- #}
-                            <div class="col-md-4 border-end">
-                                <h6 class="fw-bold mb-3">Résumé & Paramètres</h6>
-                                
-                                <div class="bg-light p-2 rounded border border-warning mb-2">
-                                    <div class="d-flex align-items-center justify-content-between">
-                                        <small class="text-muted">Inclus :</small>
-                                        <button type="button" class="btn btn-outline-warning btn-info-circle" data-bs-toggle="modal" data-bs-target="#modalVeille">?</button>
-                                    </div>
-                                    <span class="fw-bold text-dark small">Veille (18 kWh/mois)</span>
-                                </div>
+	<div class="container mt-4">
+		<div class="row justify-content-center">
+			<div class="col-md-11">
+				<div class="card shadow-sm border-0">
+					<div class="card-header bg-form text-white text-center py-2">
+						<h5 class="mb-0">Calculer votre consommation électrique</h5>
+					</div>
 
-                                <div class="bg-light p-2 rounded border border-info mb-3">
-                                    <div class="d-flex align-items-center justify-content-between">
-                                        <small class="text-muted">Tarif appliqué :</small>
-                                        <button type="button" class="btn btn-outline-info btn-info-circle" data-bs-toggle="modal" data-bs-target="#modalTarif">?</button>
-                                    </div>
-                                    <span class="fw-bold text-dark small">0.25 € / kWh</span>
-                                </div>
+					<div class="card-body p-4">
+						<div
+							class="row">
+							{# --- COLONNE GAUCHE : RÉSUMÉ --- #}
+							<div class="col-md-4 border-end">
+								<h6 class="fw-bold mb-3">Résumé & Paramètres</h6>
 
-                                <div class="d-grid">
-                                    <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#addApplianceModal">
-                                        <i class="fas fa-plus"></i> Gérer mes appareils
-                                    </button>
-                                </div>
-                            </div>
+								<div class="bg-light p-2 rounded border border-warning mb-2">
+									<div class="d-flex align-items-center justify-content-between">
+										<small class="text-muted">Inclus :</small>
+										<button type="button" class="btn btn-outline-warning btn-info-circle" data-bs-toggle="modal" data-bs-target="#modalVeille">?</button>
+									</div>
+									<span class="fw-bold text-dark small">Veille (18 kWh/mois)</span>
+								</div>
 
-                            {# --- COLONNE DROITE : FORMULAIRE --- #}
-                            <div class="col-md-8">
-                                <form id="calcForm" method="POST" action="{{ path('app_calculator_consumption') }}">
-                                    <div id="appliance-list">
-                                        {% for app in appliances %}
-                                            {# Logique pour déterminer si c'est un cycle ou une heure #}
-                                            {% set isCycle = false %}
-                                            {# Détection intelligente : Machine, Lave-vaisselle, Sèche-linge, Aspirateur, Four #}
-                                            {% set isCycle = false %}
-                                            {% if app.name matches '/(?i)machine|lave|linge|seche|four|micro|aspirateur|vaisselle/' %}
-                                                {% set isCycle = true %}
-                                            {% endif %}
+								<div class="bg-light p-2 rounded border border-info mb-3">
+									<div class="d-flex align-items-center justify-content-between">
+										<small class="text-muted">Tarif appliqué :</small>
+										<button type="button" class="btn btn-outline-info btn-info-circle" data-bs-toggle="modal" data-bs-target="#modalTarif">?</button>
+									</div>
+									<span class="fw-bold text-dark small">0.25 € / kWh</span>
+								</div>
 
-                                            <div class="mb-3 appliance-row border-bottom pb-2">
-                                                <div class="d-flex justify-content-between align-items-center mb-1">
-                                                    <span class="appliance-name text-dark">{{ app.name }}</span>
-                                                    <div class="qty-container">
-                                                        <span class="text-muted me-1" style="font-size: 0.7rem;">Qté :</span>
-                                                        <input type="number" class="qty-input quantity-input" value="1" min="1" oninput="calculateConsumption()">
-                                                    </div>
-                                                </div>
+								<div class="d-grid">
+									<button type="button" class="btn-soft" data-bs-toggle="modal" data-bs-target="#addApplianceModal">
+										<i class="fas fa-plus"></i>
+										Gérer mes appareils
+									</button>
+								</div>
+							</div>
 
-                                                <div class="row g-2 align-items-center">
-                                                    <div class="col-4">
-                                                        <label class="text-muted d-block small">Watts</label>
-                                                        <input type="number" class="form-control form-control-sm power-input" value="{{ app.power }}" oninput="calculateConsumption()">
-                                                    </div>
-                                                    
-                                                    <div class="col-5">
-                                                        {% if isCycle %}
-                                                            <label class="text-muted d-block small">Cycles / sem.</label>
-                                                            
-                                                            {# Durée par défaut : 1.5h pour le linge, 0.5h pour le micro-ondes #}
-                                                            {% set defaultDuration = 1.5 %}
-                                                            {% if 'micro' in app.name|lower %}{% set defaultDuration = 0.2 %}{% endif %}
-                                                            {% if 'seche' in app.name|lower %}{% set defaultDuration = 2.0 %}{% endif %}
+							{# --- COLONNE DROITE : FORMULAIRE --- #}
+							<div class="col-md-8">
+								<form id="calcForm" method="POST" action="{{ path('app_calculator_consumption') }}">
+									<div id="appliance-list">
+										{% for app in appliances %}
+											{# Logique pour déterminer si c'est un cycle ou une heure #}
+											{% set isCycle = false %}
+											{# Détection intelligente : Machine, Lave-vaisselle, Sèche-linge, Aspirateur, Four #}
+											{% set isCycle = false %}
+											{% if app.name matches '/(?i)machine|lave|linge|seche|four|micro|aspirateur|vaisselle/' %}
+												{% set isCycle = true %}
+											{% endif %}
 
-                                                            <input type="number" step="1" 
-                                                                class="form-control form-control-sm hours-input" 
-                                                                value="3" 
-                                                                data-cycle-duration="{{ defaultDuration }}" 
-                                                                oninput="calculateConsumption()">
-                                                            <input type="hidden" class="mode-input" value="cycles_week">
-                                                        {% else %}
-                                                            <label class="text-muted d-block small">Heures / jour</label>
-                                                            <input type="number" step="0.5" class="form-control form-control-sm hours-input" value="2" oninput="calculateConsumption()">
-                                                            <input type="hidden" class="mode-input" value="hours_day">
-                                                        {% endif %}
-                                                    </div>
+											<div class="mb-3 appliance-row border-bottom pb-2">
+												<div class="d-flex justify-content-between align-items-center mb-1">
+													<span class="appliance-name text-dark">{{ app.name }}</span>
+													<div class="qty-container">
+														<span class="text-muted me-1" style="font-size: 0.7rem;">Qté :</span>
+														<input type="number" class="qty-input quantity-input" value="1" min="1" oninput="calculateConsumption()">
+													</div>
+												</div>
 
-                                                    <div class="col-3 text-end pt-3">
-                                                        <span class="result-span text-success">0</span> <small class="text-muted">kWh</small>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        {% endfor %}
-                                    </div>
+												<div class="row g-2 align-items-center">
+													<div class="col-4">
+														<label class="text-muted d-block small">Watts</label>
+														<input type="number" class="form-control form-control-sm power-input" value="{{ app.power }}" oninput="calculateConsumption()">
+													</div>
 
-                                    <div class="mt-3 bg-dark text-white p-3 rounded shadow-sm">
-                                        <div class="d-flex justify-content-between mb-1">
-                                            <span>Consommation mensuelle :</span>
-                                            <span id="total-consumption">0 kWh</span>
-                                        </div>
-                                        <div class="d-flex justify-content-between border-top pt-2">
-                                            <span class="fw-bold">Coût estimé :</span>
-                                            <span class="text-warning fw-bold" id="total-cost" style="font-size: 1rem;">0 €</span>
-                                        </div>
+													<div class="col-5">
+														{% if isCycle %}
+															<label class="text-muted d-block small">Cycles / sem.</label>
 
-                                        {# --- AJOUT DES CHAMPS CACHÉS POUR LE CONTRÔLEUR PHP --- #}
-                                        <input type="hidden" name="total_kwh_input" id="total_kwh_input">
-                                        <input type="hidden" name="total_price_input" id="total_price_input">
+															{# Durée par défaut : 1.5h pour le linge, 0.5h pour le micro-ondes #}
+															{% set defaultDuration = 1.5 %}
+															{% if 'micro' in app.name|lower %}
+																{% set defaultDuration = 0.2 %}
+															{% endif %}
+															{% if 'seche' in app.name|lower %}
+																{% set defaultDuration = 2.0 %}
+															{% endif %}
 
-                                        <div class="row mt-3 g-2">
-                                            <div class="col">
-                                                <a href="{{ path('app_dashboard') }}" class="btn btn-outline-light btn-sm w-100">Retour</a>
-                                            </div>
-                                            <div class="col">
-                                                {# MODIFICATION : Bouton de type SUBMIT pour déclencher l'enregistrement #}
-                                                <button type="submit" class="btn btn-warning btn-sm w-100 text-dark fw-bold">Enregistrer l'estimation</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+															<input type="number" step="1" class="form-control form-control-sm hours-input" value="3" data-cycle-duration="{{ defaultDuration }}" oninput="calculateConsumption()">
+															<input type="hidden" class="mode-input" value="cycles_week">
+														{% else %}
+															<label class="text-muted d-block small">Heures / jour</label>
+															<input type="number" step="0.5" class="form-control form-control-sm hours-input" value="2" oninput="calculateConsumption()">
+															<input type="hidden" class="mode-input" value="hours_day">
+														{% endif %}
+													</div>
 
-    {# --- MODALE : GÉRER LES APPAREILS (Bibliothèque) --- #}
-    <div class="modal fade" id="addApplianceModal" tabindex="-1" aria-labelledby="addApplianceModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content text-dark">
-                <div class="modal-header bg-success text-white py-2">
-                    <h6 class="modal-title" id="addApplianceModalLabel">Ma bibliothèque d'appareils</h6>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body p-0" style="max-height: 450px; overflow-y: auto;">
-                    <div class="list-group list-group-flush">
-                        {% for item in allAppliances %}
-                            <div class="list-group-item d-flex justify-content-between align-items-center py-2 text-dark">
-                                <div>
-                                    <span class="fw-bold d-block small text-dark">{{ item.name }}</span>
-                                    <small class="text-muted">{{ item.power }}W | {{ item.mode }}</small>
-                                </div>
-                                <form action="{{ path('appliance_toggle', {'id': item.id}) }}" method="POST" class="mb-0">
-                                    <div class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" onchange="this.form.submit()" {% if item.name in userApplianceNames %}checked{% endif %}>
-                                    </div>
-                                </form>
-                            </div>
-                        {% else %}
-                            <div class="p-3 text-center text-muted small">Aucun appareil disponible.</div>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+													<div class="col-3 text-end pt-3">
+														<span class="result-span text-success">0</span>
+														<small class="text-muted">kWh</small>
+													</div>
+												</div>
+											</div>
+										{% endfor %}
+									</div>
 
-    {# --- MODALE : VEILLE --- #}
-    <div class="modal fade" id="modalVeille" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content text-dark">
-                <div class="modal-header bg-warning">
-                    <h6 class="modal-title fw-bold"><i class="fas fa-plug me-2"></i>La consommation "Fantôme"</h6>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <p class="small">Les <strong>18 kWh/mois</strong> ajoutés correspondent à la consommation de veille de vos appareils branchés 24h/24 :</p>
-                    <ul class="small">
-                        <li><strong>Box Internet :</strong> ~10 kWh/mois (le plus gros poste).</li>
-                        <li><strong>TV et Consoles :</strong> En veille, elles attendent le signal de la télécommande.</li>
-                        <li><strong>Petit électro :</strong> L'horloge du micro-ondes ou de la machine à café.</li>
-                        <li><strong>Chargeurs :</strong> Laissés sur la prise sans téléphone au bout.</li>
-                    </ul>
-                    <div class="alert alert-info py-2 mb-0">
-                        <small><i class="fas fa-lightbulb me-1"></i> <strong>Astuce :</strong> Éteindre votre box la nuit peut vous faire économiser environ 30€ par an.</small>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+									<div class="mt-3 bg-dark text-white p-3 rounded shadow-sm">
+										<div class="d-flex justify-content-between mb-1">
+											<span>Consommation mensuelle :</span>
+											<span id="total-consumption">0 kWh</span>
+										</div>
+										<div class="d-flex justify-content-between border-top pt-2">
+											<span class="fw-bold">Coût estimé :</span>
+											<span class="text-warning fw-bold" id="total-cost" style="font-size: 1rem;">0 €</span>
+										</div>
 
-    {# --- MODALE : TARIF --- #}
-    <div class="modal fade" id="modalTarif" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content text-dark">
-                <div class="modal-header bg-info text-white">
-                    <h6 class="modal-title fw-bold"><i class="fas fa-euro-sign me-2"></i>Détail du prix du kWh</h6>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <p class="small">Nous appliquons le tarif moyen de <strong>0.25 € TTC / kWh</strong>. Ce prix se décompose en trois parties :</p>
-                    <table class="table table-sm table-borderless small mb-2">
-                        <tr>
-                            <td><strong>1. L'Énergie :</strong></td>
-                            <td>La production de l'électricité.</td>
-                        </tr>
-                        <tr>
-                            <td><strong>2. Le Réseau :</strong></td>
-                            <td>Le transport par Enedis (lignes, compteurs).</td>
-                        </tr>
-                        <tr>
-                            <td><strong>3. Les Taxes :</strong></td>
-                            <td>TICFE, CTA et la TVA (20% sur la conso).</td>
-                        </tr>
-                    </table>
-                    <p class="text-muted" style="font-size: 0.75rem;">* Estimation basée sur le "Tarif Bleu" d'EDF 2024 pour une puissance de 6 kVA ou 9 kVA.</p>
-                </div>
-            </div>
-        </div>
-    </div>
+										{# --- AJOUT DES CHAMPS CACHÉS POUR LE CONTRÔLEUR PHP --- #}
+										<input type="hidden" name="total_kwh_input" id="total_kwh_input">
+										<input type="hidden" name="total_price_input" id="total_price_input">
 
-    <script>
-        {# Votre script de calcul reste inchangé ici #}
-        function calculateConsumption() {
-            const rows = document.querySelectorAll('.appliance-row');
-            let totalMonthly = 0;
-            const electricityRate = 0.25;
+										<div class="row mt-3 g-2">
+											<div class="col">
+												<a href="{{ path('app_dashboard') }}" class="btn btn-outline-light btn-sm w-100">Retour</a>
+											</div>
+											<div
+												class="col">
+												{# MODIFICATION : Bouton de type SUBMIT pour déclencher l'enregistrement #}
+												<button type="submit" class="btn btn-warning btn-sm w-100 text-dark fw-bold">Enregistrer l'estimation</button>
+											</div>
+										</div>
+									</div>
+								</form>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 
-            rows.forEach(row => {
-                const powerInput = row.querySelector('.power-input');
-                const usageInput = row.querySelector('.hours-input');
-                const quantityInput = row.querySelector('.quantity-input');
-                const modeInput = row.querySelector('.mode-input');
+	{# --- MODALE : GÉRER LES APPAREILS (Bibliothèque) --- #}
+	<div class="modal fade" id="addApplianceModal" tabindex="-1" aria-labelledby="addApplianceModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content text-dark">
+				<div class="modal-header bg-success text-white py-2">
+					<h6 class="modal-title" id="addApplianceModalLabel">Ma bibliothèque d'appareils</h6>
+					<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+				</div>
+				<div class="modal-body p-0" style="max-height: 450px; overflow-y: auto;">
+					<div class="list-group list-group-flush">
+						{% for item in allAppliances %}
+							<div class="list-group-item d-flex justify-content-between align-items-center py-2 text-dark">
+								<div>
+									<span class="fw-bold d-block small text-dark">{{ item.name }}</span>
+									<small class="text-muted">{{ item.power }}W |
+										{{ item.mode }}</small>
+								</div>
+								<form action="{{ path('appliance_toggle', {'id': item.id}) }}" method="POST" class="mb-0">
+									<div class="form-check form-switch">
+										<input class="form-check-input" type="checkbox" onchange="this.form.submit()" {% if item.name in userApplianceNames %} checked {% endif %}>
+									</div>
+								</form>
+							</div>
+						{% else %}
+							<div class="p-3 text-center text-muted small">Aucun appareil disponible.</div>
+						{% endfor %}
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 
-                if (!powerInput || !usageInput) return;
+	{# --- MODALE : VEILLE --- #}
+	<div class="modal fade" id="modalVeille" tabindex="-1" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content text-dark">
+				<div class="modal-header bg-warning">
+					<h6 class="modal-title fw-bold">
+						<i class="fas fa-plug me-2"></i>La consommation "Fantôme"</h6>
+					<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+				</div>
+				<div class="modal-body">
+					<p class="small">Les
+						<strong>18 kWh/mois</strong>
+						ajoutés correspondent à la consommation de veille de vos appareils branchés 24h/24 :</p>
+					<ul class="small">
+						<li>
+							<strong>Box Internet :</strong>
+							~10 kWh/mois (le plus gros poste).</li>
+						<li>
+							<strong>TV et Consoles :</strong>
+							En veille, elles attendent le signal de la télécommande.</li>
+						<li>
+							<strong>Petit électro :</strong>
+							L'horloge du micro-ondes ou de la machine à café.</li>
+						<li>
+							<strong>Chargeurs :</strong>
+							Laissés sur la prise sans téléphone au bout.</li>
+					</ul>
+					<div class="alert alert-info py-2 mb-0">
+						<small>
+							<i class="fas fa-lightbulb me-1"></i>
+							<strong>Astuce :</strong>
+							Éteindre votre box la nuit peut vous faire économiser environ 30€ par an.</small>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 
-                const power = parseFloat(powerInput.value) || 0;
-                const usage = parseFloat(usageInput.value) || 0;
-                const quantity = parseInt(quantityInput.value) || 1;
-                const mode = modeInput ? modeInput.value : 'hours_day';
-                
-                let kwh = 0;
-                if (mode === 'cycles_week') {
-                    const duration = parseFloat(usageInput.dataset.cycleDuration) || 1;
-                    kwh = (power * duration * usage * 4.33 * quantity) / 1000;
-                } else {
-                    kwh = (power * usage * 30 * quantity) / 1000;
-                }
+	{# --- MODALE : TARIF --- #}
+	<div class="modal fade" id="modalTarif" tabindex="-1" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content text-dark">
+				<div class="modal-header bg-info text-white">
+					<h6 class="modal-title fw-bold">
+						<i class="fas fa-euro-sign me-2"></i>Détail du prix du kWh</h6>
+					<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+				</div>
+				<div class="modal-body">
+					<p class="small">Nous appliquons le tarif moyen de
+						<strong>0.25 € TTC / kWh</strong>. Ce prix se décompose en trois parties :</p>
+					<table class="table table-sm table-borderless small mb-2">
+						<tr>
+							<td>
+								<strong>1. L'Énergie :</strong>
+							</td>
+							<td>La production de l'électricité.</td>
+						</tr>
+						<tr>
+							<td>
+								<strong>2. Le Réseau :</strong>
+							</td>
+							<td>Le transport par Enedis (lignes, compteurs).</td>
+						</tr>
+						<tr>
+							<td>
+								<strong>3. Les Taxes :</strong>
+							</td>
+							<td>TICFE, CTA et la TVA (20% sur la conso).</td>
+						</tr>
+					</table>
+					<p class="text-muted" style="font-size: 0.75rem;">* Estimation basée sur le "Tarif Bleu" d'EDF 2024 pour une puissance de 6 kVA ou 9 kVA.</p>
+				</div>
+			</div>
+		</div>
+	</div>
 
-                row.querySelector('.result-span').textContent = kwh.toFixed(2);
-                totalMonthly += kwh;
-            });
+	<script>
+		{# Votre script de calcul reste inchangé ici #}
+function calculateConsumption() {
+const rows = document.querySelectorAll('.appliance-row');
+let totalMonthly = 0;
+const electricityRate = 0.25;
 
-            totalMonthly += 18; 
-            const finalCost = totalMonthly * electricityRate;
+rows.forEach(row => {
+const powerInput = row.querySelector('.power-input');
+const usageInput = row.querySelector('.hours-input');
+const quantityInput = row.querySelector('.quantity-input');
+const modeInput = row.querySelector('.mode-input');
 
-            document.getElementById('total-consumption').textContent = totalMonthly.toFixed(2) + ' kWh';
-            document.getElementById('total-cost').textContent = finalCost.toFixed(2) + ' €';
-            document.getElementById('total_kwh_input').value = totalMonthly.toFixed(2);
-            document.getElementById('total_price_input').value = finalCost.toFixed(2);
-        }
+if (! powerInput || ! usageInput) 
+return;
 
-        window.onload = calculateConsumption;
-    </script>
+
+const power = parseFloat(powerInput.value) || 0;
+const usage = parseFloat(usageInput.value) || 0;
+const quantity = parseInt(quantityInput.value) || 1;
+const mode = modeInput ? modeInput.value : 'hours_day';
+
+let kwh = 0;
+if (mode === 'cycles_week') {
+const duration = parseFloat(usageInput.dataset.cycleDuration) || 1;
+kwh = (power * duration * usage * 4.33 * quantity) / 1000;
+} else {
+kwh = (power * usage * 30 * quantity) / 1000;
+}
+
+row.querySelector('.result-span').textContent = kwh.toFixed(2);
+totalMonthly += kwh;
+});
+
+totalMonthly += 18;
+const finalCost = totalMonthly * electricityRate;
+
+document.getElementById('total-consumption').textContent = totalMonthly.toFixed(2) + ' kWh';
+document.getElementById('total-cost').textContent = finalCost.toFixed(2) + ' €';
+document.getElementById('total_kwh_input').value = totalMonthly.toFixed(2);
+document.getElementById('total_price_input').value = finalCost.toFixed(2);
+}
+
+window.onload = calculateConsumption;
+	</script>
 {% endblock %}

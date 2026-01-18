@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
@@ -47,19 +49,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $created_at = null;
 
-    // --- NOUVELLE RELATION AJOUTÉE ---
     #[ORM\OneToOne(mappedBy: 'user', cascade: ['persist', 'remove'])]
     private ?Lodgment $lodgment = null;
 
-    #[ORM\OneToOne(cascade: ['persist', 'remove'])]
-    private ?BilanCarbone $bilanCarbone = null;
+    #[ORM\OneToMany(mappedBy: 'utilisateur', targetEntity: BilanCarbone::class)]
+    private Collection $bilansCarbone;
 
     public function __construct()
     {
         $this->created_at = new \DateTime();
+        $this->bilansCarbone = new ArrayCollection();
     }
-
-    // ... (Gardez vos getters/setters existants pour id, email, roles, password, etc.)
 
     public function getId(): ?int
     {
@@ -154,7 +154,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    // --- NOUVEAUX GETTER ET SETTER POUR LODGMENT ---
     public function getLodgment(): ?Lodgment
     {
         return $this->lodgment;
@@ -162,7 +161,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function setLodgment(?Lodgment $lodgment): static
     {
-        // On s'assure que le lien est bidirectionnel
         if ($lodgment !== null && $lodgment->getUser() !== $this) {
             $lodgment->setUser($this);
         }
@@ -171,14 +169,32 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getBilanCarbone(): ?BilanCarbone
+    /**
+     * @return Collection<int, BilanCarbone>
+     */
+    public function getBilansCarbone(): Collection
     {
-        return $this->bilanCarbone;
+        return $this->bilansCarbone;
     }
 
-    public function setBilanCarbone(?BilanCarbone $bilanCarbone): static
+    public function addBilanCarbone(BilanCarbone $bilanCarbone): static
     {
-        $this->bilanCarbone = $bilanCarbone;
+        if (!$this->bilansCarbone->contains($bilanCarbone)) {
+            $this->bilansCarbone->add($bilanCarbone);
+            $bilanCarbone->setUtilisateur($this);
+        }
+
+        return $this;
+    }
+
+    public function removeBilanCarbone(BilanCarbone $bilanCarbone): static
+    {
+        if ($this->bilansCarbone->removeElement($bilanCarbone)) {
+            if ($bilanCarbone->getUtilisateur() === $this) {
+                $bilanCarbone->setUtilisateur(null);
+            }
+        }
+
         return $this;
     }
 }
