@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Entity\Lodgment; // Ajout nécessaire
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -82,12 +83,26 @@ final class ProfileController extends AbstractController
         $user->setNom($request->request->get('nom'));
         $user->setPrenom($request->request->get('prenom'));
 
+        // --- DEBUT DES AJOUTS POUR LODGMENT ---
+        $lodgment = $user->getLodgment();
+
+        // Si l'utilisateur n'a pas de logement, on le crée
+        if (!$lodgment) {
+            $lodgment = new Lodgment();
+            $lodgment->setUser($user);
+            $em->persist($lodgment);
+        }
+
+        $lodgment->setLodgmentType($request->request->get('lodgment_type'));
+        $lodgment->setSurface((int) $request->request->get('surface'));
+        $lodgment->setOccupant((int) $request->request->get('occupant'));
+        // --- FIN DES AJOUTS POUR LODGMENT ---
+
         // Hashage du mot de passe s'il est modifié
         $newPassword = $request->request->get('new_password');
         $confirmPassword = $request->request->get('confirm_password');
 
         if (!empty($newPassword)) {
-            // Vérifier que les deux mots de passe correspondent
             if ($newPassword !== $confirmPassword) {
                 $this->addFlash('error', 'Les mots de passe ne correspondent pas.');
                 return $this->redirectToRoute('app_profile_edit');
@@ -99,7 +114,7 @@ final class ProfileController extends AbstractController
 
         $em->flush();
 
-        $this->addFlash('success', 'Profil mis à jour avec succès !');
+        $this->addFlash('success', 'Profil et logement mis à jour avec succès !');
         return $this->redirectToRoute('app_profile_edit');
     }
 
@@ -112,14 +127,12 @@ final class ProfileController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
 
-        // Vérification du token CSRF
         $submittedToken = $request->request->get('_csrf_token');
         if (!$this->isCsrfTokenValid('delete-account', $submittedToken)) {
             $this->addFlash('error', 'Token CSRF invalide. Suppression annulée.');
             return $this->redirectToRoute('app_profile_edit');
         }
 
-        // On invalide la session avant de supprimer
         $this->container->get('security.token_storage')->setToken(null);
         $request->getSession()->invalidate();
 

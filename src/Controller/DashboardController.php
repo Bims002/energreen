@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Repository\ArchiveConsumptionRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -12,7 +13,6 @@ use App\Entity\BilanCarbone;
 
 class DashboardController extends AbstractController
 {
-    #[Route('/dashboard', name: 'app_dashboard')]
     #[Route('/dashboard', name: 'app_dashboard')]
     public function index(EntityManagerInterface $entityManager): Response
     {
@@ -266,5 +266,110 @@ class DashboardController extends AbstractController
         }
 
         return $suggestions;
+    }
+
+    #[Route('/dashboard', name: 'app_dashboard')]
+    public function showDashboard(ArchiveConsumptionRepository $archiveRepo, EntityManagerInterface $entityManager): Response
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+        if (!$user)
+            return $this->redirectToRoute('app_login');
+
+        // 1. Récupérations de base
+        $lodgment = $user->getLodgment();
+        $latestBilan = $user->getBilansCarbone()->last() ?: null;
+        $consumption = $entityManager->getRepository(Consumption::class)->findOneBy(['user' => $user], ['billing_date' => 'DESC']);
+
+        // --- NOUVELLE LOGIQUE : ALERTE MISE À JOUR HEBDOMADAIRE ---
+        $showUpdateReminder = false;
+        if ($consumption) {
+            $lastDate = $consumption->getBillingDate();
+            $now = new \DateTime();
+            $interval = $lastDate->diff($now);
+
+            // Si la dernière saisie date de plus de 7 jours
+            if ($interval->days >= 7) {
+                $showUpdateReminder = true;
+            }
+        } else {
+            // Si aucune donnée n'existe encore
+            $showUpdateReminder = true;
+        }
+        // ---------------------------------------------------------
+
+        // 2. Préparation des données MOIS (garder votre code identique)
+        $archives = $archiveRepo->findBy(['user' => $user], ['archived_at' => 'ASC'], 12);
+        $labelsMois = [];
+        $dataMois = [];
+        foreach ($archives as $archive) {
+            $labelsMois[] = $archive->getArchivedAt()->format('d/m');
+            $dataMois[] = $archive->getTotalKwh();
+        }
+
+        // 3. Préparation des données JOUR (garder votre code identique)
+        $labelsJour = [];
+        $dataJour = [];
+        $lastTotal = !empty($dataMois) ? end($dataMois) : 0;
+
+        $joursFr = [
+            'Mon' => 'Lun',
+            'Tue' => 'Mar',
+            'Wed' => 'Mer',
+            'Thu' => 'Jeu',
+            'Fri' => 'Ven',
+            'Sat' => 'Sam',
+            'Sun' => 'Dim'
+        ];
+
+        for ($i = 6; $i >= 0; $i--) {
+            $date = new \DateTime("-$i days");
+            $dayEn = $date->format('D');
+            $dayFr = $joursFr[$dayEn];
+            $labelsJour[] = $dayFr . ' ' . $date->format('d/m');
+            $dataJour[] = round(($lastTotal / 30) * (rand(85, 115) / 100), 1);
+        }
+
+        // 4. Préparation des données SEMAINE (garder votre code identique)
+        $dataSemaine = [
+            round($lastTotal / 4.2, 1),
+            round($lastTotal / 3.8, 1),
+            round($lastTotal / 4.1, 1),
+            round($lastTotal / 4, 1)
+        ];
+
+        // 5. Textes d'information contextuels
+        $infoMois = "Historique basé sur vos 12 derniers relevés validés.";
+        $infoSemaine = "Estimation de la répartition sur les 4 dernières semaines.";
+        $infoJour = "Détail estimé du " . $labelsJour[0] . " au " . end($labelsJour) . ".";
+
+        // 6. Calcul de la note Carbone
+        $rating = $latestBilan ? $this->calculateCarbonGrade($latestBilan->getTotal()) : ['label' => '?', 'color' => '#6c757d'];
+
+        return $this->render('dashboard.html.twig', [
+            'labelsMois' => json_encode($labelsMois),
+            'dataMois' => json_encode($dataMois),
+            'labelsJour' => json_encode($labelsJour),
+            'dataJour' => json_encode($dataJour),
+            'dataSemaine' => json_encode($dataSemaine),
+
+            'infoMois' => $infoMois,
+            'infoSemaine' => $infoSemaine,
+            'infoJour' => $infoJour,
+
+            'lodgment' => $lodgment,
+            'logement' => $lodgment,
+            'latest_bilan' => $latestBilan,
+            'consumption' => $consumption,
+            'carbon_rating' => $rating,
+            'current_month_consumption' => $consumption ? $consumption->getTotalKwh() : 0,
+            'current_month_cost' => $consumption ? $consumption->getEstimatedPrice() : 0,
+            'co2_emissions' => $consumption ? round($consumption->getTotalKwh() * 0.367) : 0,
+            'suggestions_carbone' => $this->generateDetailedSuggestions($latestBilan),
+            'suggestions_elec' => $this->generateElectricSuggestions($consumption),
+
+            // On envoie la variable à Twig
+            'show_update_reminder' => $showUpdateReminder,
+        ]);
     }
 }
