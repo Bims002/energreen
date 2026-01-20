@@ -69,9 +69,18 @@
     <h1>404</h1>
     <h2>Page non trouvée</h2>
     <p>Désolé, la page que vous recherchez n'existe pas ou a été déplacée.</p>
-    <a href="javascript:history.back()" class="btn-back">Retour à la page précédente</a>
+    <button onclick="goBack()" class="btn-back" style="border: none; cursor: pointer;">Retour à la page précédente</button>
     <a href="/dashboard" class="btn-dashboard">Aller au tableau de bord</a>
     <a href="/login" class="btn-back" style="margin-top: 10px; display: block;">Aller à la page de connexion</a>
 </div>
+<script>
+    function goBack() {
+        if (window.history.length > 1) {
+            window.history.back();
+        } else {
+            window.location.href = '/dashboard';
+        }
+    }
+</script>
 </body>
 </html>
