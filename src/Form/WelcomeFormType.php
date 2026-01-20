@@ -117,4 +117,6 @@ class WelcomeFormType extends AbstractType
             // Pas de data_class car on gère 2 entités (Lodgment et Consumption)
         ]);
     }
+
+
 }

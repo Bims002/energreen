@@ -177,6 +177,30 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->bilansCarbone;
     }
 
+    /**
+     * AJOUT : Permet de récupérer le dernier bilan de la collection
+     * Utilisé par FormulaireCO2Controller.php
+     */
+    public function getBilanCarbone(): ?BilanCarbone
+    {
+        return $this->bilansCarbone->last() ?: null;
+    }
+
+    /**
+     * AJOUT : Permet d'ajouter un bilan via le contrôleur
+     * Utilisé par FormulaireCO2Controller.php
+     */
+    public function setBilanCarbone(?BilanCarbone $bilanCarbone): static
+    {
+        if ($bilanCarbone === null) {
+            // Logique de détachement si nécessaire (ex: lors de l'archivage)
+            return $this;
+        }
+
+        $this->addBilanCarbone($bilanCarbone);
+        return $this;
+    }
+
     public function addBilanCarbone(BilanCarbone $bilanCarbone): static
     {
         if (!$this->bilansCarbone->contains($bilanCarbone)) {

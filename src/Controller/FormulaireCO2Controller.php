@@ -79,7 +79,6 @@ class FormulaireCO2Controller extends AbstractController
 
         }
 
-        // --- CE RETURN DOIT TOUJOURS ÊTRE EN DEHORS DU IF (POST) ---
         return $this->render('formulaireCO2.html.twig', [
             'results' => $results,
             'total' => round($total, 2),
