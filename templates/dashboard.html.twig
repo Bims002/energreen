@@ -85,25 +85,6 @@
         border-color: var(--vert-energreen);
     }
 
-    .toggle-bar {
-        background: #eee;
-        border-radius: 5px;
-        padding: 5px;
-        display: inline-block;
-    }
-
-    .toggle-bar span {
-        padding: 5px 15px;
-        cursor: pointer;
-        border-radius: 3px;
-        font-size: 0.9rem;
-    }
-
-    .toggle-bar .active {
-        background: var(--marron-energreen);
-        color: white;
-    }
-
     /* Badge de Note A-F */
     .carbon-grade-badge {
         display: inline-flex;
@@ -146,7 +127,7 @@
 {% endfor %}
 
 {% if show_update_reminder %}
-    <div class="alert alert-info" style="border-left: 5px solid #2e7d32; background-color: #e8f5e9;">
+    <div class="alert alert-info" style="border-left: 5px solid #2e7d32; background-color: #e8f5e9; max-width: 1200px; margin: 20px auto 0 auto;">
         <i class="fas fa-calendar-alt me-2"></i>
         Cela fait plus d'une semaine que vous n'avez pas mis à jour vos données d'électricité. 
         <strong><a href="{{ path('app_calculator_consumption') }}" style="color: #2e7d32; text-decoration: underline;">
@@ -156,7 +137,7 @@
 {% endif %}
 
 <div class="dashboard-grid">
-    {# SECTION GÉRER LES DONNÉES - Toujours nette si logement est null #}
+    {# SECTION GÉRER LES DONNÉES #}
     {% if logement is null %}
         <section class="card span-3 onboarding-active" style="display: flex; justify-content: space-between; align-items: center; background: #f0f4f1;">
             <div>
@@ -167,37 +148,28 @@
         </section>
     {% endif %}
 
-    {# LE RESTE DU DASHBOARD - Mis dans une sous-grille pour appliquer le flou facilement #}
     <div class="span-3 dashboard-grid {{ logement is null ? 'dashboard-locked' : '' }}" style="padding: 0; margin: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
         
         {# Graphique Consommation Électrique #}
         <section class="card span-2">
-			<div style="display: flex; justify-content: space-between;">
-				<div>
-					<h2 style="font-size: 1.4rem">Historique de la consommation</h2>
-					<p>Aperçu de votre consommation électrique</p>
-					<p id="chartDescription">{{ infoMois }}</p>
-				</div> 
-				<div class="toggle-bar">
-					<span>Jour</span>
-					<span>Semaine</span>
-					<span class="active">Mois</span>
-				</div>
-			</div>
-			<div style="height: 250px; background: #fafafa; margin-top: 20px; border: 1px solid #eee; padding: 10px;">
-				<canvas id="consumptionChart"></canvas>
-			</div>
-		</section>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h2 style="font-size: 1.4rem; margin-bottom: 5px;">Historique de la consommation</h2>
+                    <p id="chartDescription" style="margin: 0; color: #666;">{{ infoMois }}</p>
+                </div>
+            </div>
+            <div style="height: 250px; background: #fafafa; margin-top: 20px; border: 1px solid #eee; padding: 10px;">
+                <canvas id="consumptionChart"></canvas>
+            </div>
+        </section>
 
-
-        {# Section Suggestions personnalisés #}
+        {# Section Suggestions #}
         <section class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px;">
                 <h2 style="margin: 0; font-size: 1.2rem;">Suggestions</h2>
-                
                 <ul class="nav nav-pills" id="suggestionTabs" role="tablist">
                     <li class="nav-item">
-                        <button class="nav-link active py-1 px-3" id="carbone-tab" data-bs-toggle="pill" data-bs-target="#tab-carbone" type="button" style="font-size: 0.8rem;">Impact Carbone</button>
+                        <button class="nav-link active py-1 px-3" id="carbone-tab" data-bs-toggle="pill" data-bs-target="#tab-carbone" type="button" style="font-size: 0.8rem;">Carbone</button>
                     </li>
                     <li class="nav-item">
                         <button class="nav-link py-1 px-3" id="elec-tab" data-bs-toggle="pill" data-bs-target="#tab-elec" type="button" style="font-size: 0.8rem;">Électricité</button>
@@ -217,7 +189,7 @@
                             {% endfor %}
                             {% if suggestions_carbone|length > 3 %}
                                 <button class="btn-energreen-dark mt-2" data-bs-toggle="modal" data-bs-target="#suggestionsModal">
-                                    Voir tout le bilan ({{ suggestions_carbone|length }} suggestions)
+                                    Voir tout le bilan ({{ suggestions_carbone|length }})
                                 </button>
                             {% endif %}
                         {% else %}
@@ -236,7 +208,7 @@
                                 </div>
                             {% endfor %}
                         {% else %}
-                            <p class="text-muted small">Saisissez vos consommations pour voir toutes les suggestions.</p>
+                            <p class="text-muted small">Saisissez vos consommations pour voir les suggestions.</p>
                         {% endif %}
                     </div>
                 </div>
@@ -250,7 +222,7 @@
             </div>
 
             {% if latest_bilan %}
-                <div style="height: 200px; margin: 10px 0;">
+                <div style="height: 180px; margin: 10px 0;">
                     <canvas id="impactChart"></canvas>
                 </div>
                 
@@ -261,8 +233,8 @@
                     
                     {% if carbon_rating is defined %}
                         <li style="padding: 10px 0; display: flex; align-items: center; gap: 10px;">
-                            <span style="color: #555;">Votre score écologique :</span>
-                            <div class="carbon-grade-badge" style="background-color: {{ carbon_rating.color }}; margin-left: 0;">
+                            <span style="color: #555;">Votre score :</span>
+                            <div class="carbon-grade-badge" style="background-color: {{ carbon_rating.color }};">
                                 {{ carbon_rating.label }}
                             </div>
                         </li>
@@ -281,23 +253,19 @@
                     {% endif %}
 
                     <li style="padding: 5px 0; color: #666; border-top: 1px solid #eee;">
-                        <small>Dernier calcul le {{ latest_bilan.createdAt|date('d/m/Y') }}</small>
+                        <small>Calculé le {{ latest_bilan.createdAt|date('d/m/Y') }}</small>
                     </li>
-                    
-                    <div style="text-align: center; padding: 15px 0;">
-                        <a href="{{ path('app_formulaire') }}" class="btn-energreen" style="font-size: 0.8em;">Recalculer mon empreinte</a>
-                    </div>
                 </ul>
             {% else %}
                 <div style="text-align: center; padding: 20px;">
-                    <p>Aucun bilan complet trouvé.</p>
-                    <a href="{{ path('app_formulaire') }}" class="btn-energreen" style="font-size: 0.8em;">Calculer mon empreinte</a>
+                    <p>Aucun bilan trouvé.</p>
+                    <a href="{{ path('app_formulaire') }}" class="btn-energreen" style="font-size: 0.8em;">Calculer</a>
                 </div>
             {% endif %}
         </section>
 
         {# Coût et Consommation #}
-        <section class="card shadow-sm border-0 p-3">
+        <section class="card">
             <h2 class="h5 fw-bold mb-3">Coût et consommation</h2>
             <div class="mt-3">
                 <div class="mb-3">
@@ -311,10 +279,10 @@
                     </span>
                 </div>
                 <div>
-                    <span class="d-block text-muted small text-uppercase lh-1">Consommation estimée</span>
+                    <span class="d-block text-muted small text-uppercase lh-1">Volume estimé</span>
                     <span class="h4 fw-bold">
                         {% if consumption and consumption.totalKwh is not null %}
-                            {{ consumption.totalKwh|number_format(2, ',', ' ') }} kWh
+                            {{ consumption.totalKwh|number_format(0, ',', ' ') }} kWh
                         {% else %}
                             0 kWh
                         {% endif %}
@@ -325,11 +293,8 @@
             {% if consumption %}
                 <div class="mt-2 border-top pt-2">
                     <small class="text-muted">
-                        Dernière mise à jour : {{ consumption.billingDate|date('d/m/Y') }}
+                        Dernier relevé : {{ consumption.billingDate|date('d/m/Y') }}
                     </small>
-                    <div style="text-align: center; padding: 15px 0;">
-                        <a href="{{ path('app_formulaire') }}" class="btn-energreen" style="font-size: 0.8em;">Recalculer ma consommation</a>
-                    </div>
                 </div>
             {% endif %}
         </section>
@@ -342,7 +307,7 @@
     </div>
 </div>
 
-{# MODALE #}
+{# MODALE SUGGESTIONS #}
 {% if suggestions_carbone is defined and suggestions_carbone|length > 3 %}
 <div class="modal fade" id="suggestionsModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -371,37 +336,16 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    
-    // --- 1. CONFIGURATION DES DONNÉES DU GRAPHIQUE LINÉAIRE ---
-    const chartDesc = document.getElementById('chartDescription');
-    const rawData = {
-        mois: {
-            labels: {{ labelsMois|raw }},
-            data: {{ dataMois|raw }},
-            desc: "{{ infoMois }}"
-        },
-        semaine: {
-            labels: ['Semaine 1', 'Semaine 2', 'Semaine 3', 'Semaine 4'],
-            data: {{ dataSemaine|raw }},
-            desc: "{{ infoSemaine }}"
-        },
-        jour: {
-            labels: {{ labelsJour|raw }},
-            data: {{ dataJour|raw }},
-            desc: "{{ infoJour }}"
-        }
-    };
-
-    // --- 2. INITIALISATION DU GRAPHIQUE LINÉAIRE ---
+    // --- GRAPHIQUE LINÉAIRE (Mois seulement) ---
     const ctxLine = document.getElementById('consumptionChart');
     if (ctxLine) {
-        let consumptionChart = new Chart(ctxLine.getContext('2d'), {
+        new Chart(ctxLine.getContext('2d'), {
             type: 'line',
             data: {
-                labels: rawData.mois.labels,
+                labels: {{ labelsMois|raw }},
                 datasets: [{
                     label: 'Consommation (kWh)',
-                    data: rawData.mois.data,
+                    data: {{ dataMois|raw }},
                     borderColor: '#1a361c',
                     backgroundColor: 'rgba(26, 54, 28, 0.1)',
                     fill: true,
@@ -414,25 +358,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 plugins: { legend: { display: false } }
             }
         });
-
-        // Gestion des boutons Jour/Semaine/Mois
-        document.querySelectorAll('.toggle-bar span').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('.toggle-bar span').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-
-                const period = this.innerText.toLowerCase(); 
-                if (rawData[period]) {
-                    consumptionChart.data.labels = rawData[period].labels;
-                    consumptionChart.data.datasets[0].data = rawData[period].data;
-                    if (chartDesc) chartDesc.innerText = rawData[period].desc;
-                    consumptionChart.update();
-                }
-            });
-        });
     }
 
-    // --- 3. RÉINTÉGRATION DU GRAPHIQUE CAMEMBERT (Bilan Carbone) ---
+    // --- GRAPHIQUE CAMEMBERT ---
     {% if latest_bilan %}
     const ctxPie = document.getElementById('impactChart');
     if (ctxPie) {
@@ -449,7 +377,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         {{ latest_bilan.electromenager }},
                         {{ latest_bilan.textile }}
                     ],
-                    backgroundColor: ['#00d60eff', '#401ddbff', '#f0f01dff', '#e82222ff', '#31ece5ff', '#ea32f1ff'],
+                    backgroundColor: ['#2ecc71', '#3498db', '#f1c40f', '#e74c3c', '#1abc9c', '#9b59b6'],
                     borderWidth: 1
                 }]
             },
@@ -468,6 +396,4 @@ document.addEventListener('DOMContentLoaded', function () {
     {% endif %}
 });
 </script>
-
-
 {% endblock %}

@@ -26,11 +26,13 @@ class FormulaireCO2Controller extends AbstractController
             // --- 1. ARCHIVAGE ---
             $oldBilan = $user->getBilanCarbone();
             if ($oldBilan) {
-                // Détachement pour éviter l'erreur de clé étrangère
-                $user->setBilanCarbone(null);
-                $em->flush();
-
+                // On archive les données via le service
                 $bilanManager->archiveAndDeleteOldBilan($oldBilan);
+
+                // CRUCIAL : On retire le bilan de la collection de l'utilisateur.
+                // Comme nous avons configuré 'orphanRemoval: true' dans l'entité User,
+                // Doctrine va supprimer ce bilan physiquement lors du prochain flush().
+                $user->removeBilanCarbone($oldBilan);
             }
 
             // --- 2. CALCULS ---
@@ -52,7 +54,7 @@ class FormulaireCO2Controller extends AbstractController
 
             $total = $scoreLogement + $scoreNumerique + $scoreElectro + $scoreAlim + $scoreTransports + $scoreTextile;
 
-            // --- 3. ENREGISTREMENT ---
+            // --- 3. ENREGISTREMENT DU NOUVEAU ---
             $bilan = new BilanCarbone();
             $bilan->setLogement(round($scoreLogement, 2));
             $bilan->setNumerique(round($scoreNumerique, 2));
@@ -62,10 +64,15 @@ class FormulaireCO2Controller extends AbstractController
             $bilan->setTextile(round($scoreTextile, 2));
             $bilan->setTotal(round($total, 2));
 
-            $bilan->setUtilisateur($user);
-            $user->setBilanCarbone($bilan);
+            // On utilise addBilanCarbone qui lie automatiquement l'utilisateur au bilan
+            $user->addBilanCarbone($bilan);
 
             $em->persist($bilan);
+
+            // Le flush unique va traiter : 
+            // - L'insertion de l'archive (faite dans le manager)
+            // - La suppression physique de l'ancien bilan (via removeBilanCarbone)
+            // - L'insertion du nouveau bilan
             $em->flush();
 
             $results = [
@@ -77,6 +84,7 @@ class FormulaireCO2Controller extends AbstractController
                 'Textile' => round($scoreTextile, 2),
             ];
 
+            $this->addFlash('success', 'Votre bilan carbone a été mis à jour.');
         }
 
         return $this->render('formulaireCO2.html.twig', [

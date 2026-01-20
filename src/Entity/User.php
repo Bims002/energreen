@@ -25,15 +25,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 180)]
     private ?string $email = null;
 
-    /**
-     * @var list<string> Les rôles de l'utilisateur
-     */
     #[ORM\Column(type: Types::JSON)]
     private array $roles = [];
 
-    /**
-     * @var string Le mot de passe haché
-     */
     #[ORM\Column(length: 255)]
     private ?string $password = null;
 
@@ -49,16 +43,29 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $created_at = null;
 
+    // Suppression en cascade pour le logement
     #[ORM\OneToOne(mappedBy: 'user', cascade: ['persist', 'remove'])]
     private ?Lodgment $lodgment = null;
 
-    #[ORM\OneToMany(mappedBy: 'utilisateur', targetEntity: BilanCarbone::class)]
+    /**
+     * Suppression en cascade pour les bilans carbone
+     */
+    #[ORM\OneToMany(mappedBy: 'utilisateur', targetEntity: BilanCarbone::class, cascade: ['all'], orphanRemoval: true)]
     private Collection $bilansCarbone;
+
+    /**
+     * AJOUT CRUCIAL : Relation avec Consumption
+     * Le cascade: ['remove'] permet de supprimer automatiquement toutes les consommations 
+     * liées à cet utilisateur quand celui-ci est supprimé.
+     */
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Consumption::class, cascade: ['remove'])]
+    private Collection $consumptions;
 
     public function __construct()
     {
         $this->created_at = new \DateTime();
         $this->bilansCarbone = new ArrayCollection();
+        $this->consumptions = new ArrayCollection(); // Initialisation
     }
 
     public function getId(): ?int
@@ -164,7 +171,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         if ($lodgment !== null && $lodgment->getUser() !== $this) {
             $lodgment->setUser($this);
         }
-
         $this->lodgment = $lodgment;
         return $this;
     }
@@ -177,27 +183,21 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->bilansCarbone;
     }
 
-    /**
-     * AJOUT : Permet de récupérer le dernier bilan de la collection
-     * Utilisé par FormulaireCO2Controller.php
-     */
     public function getBilanCarbone(): ?BilanCarbone
     {
         return $this->bilansCarbone->last() ?: null;
     }
 
-    /**
-     * AJOUT : Permet d'ajouter un bilan via le contrôleur
-     * Utilisé par FormulaireCO2Controller.php
-     */
     public function setBilanCarbone(?BilanCarbone $bilanCarbone): static
     {
-        if ($bilanCarbone === null) {
-            // Logique de détachement si nécessaire (ex: lors de l'archivage)
-            return $this;
+        foreach ($this->bilansCarbone as $oldBilan) {
+            $this->removeBilanCarbone($oldBilan);
         }
 
-        $this->addBilanCarbone($bilanCarbone);
+        if ($bilanCarbone !== null) {
+            $this->addBilanCarbone($bilanCarbone);
+        }
+
         return $this;
     }
 
@@ -207,7 +207,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             $this->bilansCarbone->add($bilanCarbone);
             $bilanCarbone->setUtilisateur($this);
         }
-
         return $this;
     }
 
@@ -218,7 +217,33 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $bilanCarbone->setUtilisateur(null);
             }
         }
+        return $this;
+    }
 
+    /**
+     * @return Collection<int, Consumption>
+     */
+    public function getConsumptions(): Collection
+    {
+        return $this->consumptions;
+    }
+
+    public function addConsumption(Consumption $consumption): static
+    {
+        if (!$this->consumptions->contains($consumption)) {
+            $this->consumptions->add($consumption);
+            $consumption->setUser($this);
+        }
+        return $this;
+    }
+
+    public function removeConsumption(Consumption $consumption): static
+    {
+        if ($this->consumptions->removeElement($consumption)) {
+            if ($consumption->getUser() === $this) {
+                $consumption->setUser(null);
+            }
+        }
         return $this;
     }
 }

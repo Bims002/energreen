@@ -14,7 +14,7 @@ use App\Entity\BilanCarbone;
 class DashboardController extends AbstractController
 {
     #[Route('/dashboard', name: 'app_dashboard')]
-    public function index(EntityManagerInterface $entityManager): Response
+    public function index(ArchiveConsumptionRepository $archiveRepo, EntityManagerInterface $entityManager): Response
     {
         // 1. Vérification de la connexion
         $user = $this->getUser();
@@ -22,15 +22,13 @@ class DashboardController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
 
-        // 2. Récupération des Repositories
-        $consumptionRepo = $entityManager->getRepository(Consumption::class);
+        // 2. Récupération des données de base
         $lodgmentRepo = $entityManager->getRepository(Lodgment::class);
+        $consumptionRepo = $entityManager->getRepository(Consumption::class);
         $bilanRepo = $entityManager->getRepository(BilanCarbone::class);
 
-        // 3. Récupération du logement (Sera null si non rempli, ce qui déclenchera le flou dans Twig)
         $userLodgment = $lodgmentRepo->findOneBy(['user' => $user]);
 
-        // 4. Récupération des dernières données de consommation et bilan
         $latestConsumption = $consumptionRepo->findOneBy(
             ['user' => $user],
             ['billing_date' => 'DESC']
@@ -41,40 +39,59 @@ class DashboardController extends AbstractController
             ['createdAt' => 'DESC']
         );
 
-        // 5. Préparation des variables de calcul (Valeurs par défaut à 0)
-        $kwh = $latestConsumption ? $latestConsumption->getTotalKwh() : 0;
-        $price = $latestConsumption ? $latestConsumption->getEstimatedPrice() : 0;
-
-        // 6. Calcul de la note Carbone (A à F)
-        $rating = ['label' => '?', 'color' => '#6c757d'];
-        if ($latestBilan) {
-            $rating = $this->calculateCarbonGrade($latestBilan->getTotal());
+        // 3. Logique d'alerte mise à jour hebdomadaire
+        $showUpdateReminder = false;
+        if ($latestConsumption) {
+            $lastDate = $latestConsumption->getBillingDate();
+            $now = new \DateTime();
+            $interval = $lastDate->diff($now);
+            if ($interval->days >= 7) {
+                $showUpdateReminder = true;
+            }
+        } else {
+            $showUpdateReminder = true;
         }
 
-        // 7. Envoi de toutes les données à la vue Twig
+        // 4. Préparation des données MOIS (Suppression JOUR et SEMAINE demandée)
+        $archives = $archiveRepo->findBy(['user' => $user], ['archived_at' => 'ASC'], 12);
+        $labelsMois = [];
+        $dataMois = [];
+        foreach ($archives as $archive) {
+            $labelsMois[] = $archive->getArchivedAt()->format('d/m');
+            $dataMois[] = $archive->getTotalKwh();
+        }
+
+        // 5. Calculs et variables de rendu
+        $kwh = $latestConsumption ? $latestConsumption->getTotalKwh() : 0;
+        $price = $latestConsumption ? $latestConsumption->getEstimatedPrice() : 0;
+        $rating = $latestBilan ? $this->calculateCarbonGrade($latestBilan->getTotal()) : ['label' => '?', 'color' => '#6c757d'];
+
         return $this->render('dashboard.html.twig', [
-            // Indispensable pour la condition {% if user_lodgment is null %} dans votre Twig
+            // Données Graphique (Mois seulement)
+            'labelsMois' => json_encode($labelsMois),
+            'dataMois' => json_encode($dataMois),
+            'infoMois' => "Historique basé sur vos 12 derniers relevés validés.",
+
+            // Objets pour Twig (Indispensables pour vos conditions IF)
             'user_lodgment' => $userLodgment,
-
-            // Utilisé pour la variable 'logement' que vous appelez ailleurs
             'logement' => $userLodgment,
+            'lodgment' => $userLodgment,
             'consumption' => $latestConsumption,
+            'latest_consumption' => $latestConsumption,
+            'latest_bilan' => $latestBilan,
 
-            // Variables d'état pour les graphiques
-            'has_data' => ($latestConsumption !== null),
-            'has_consumption' => ($latestConsumption !== null),
-
-            // Valeurs calculées pour les cartes
+            // Valeurs calculées
             'current_month_consumption' => $kwh,
             'current_month_cost' => $price,
             'co2_emissions' => round($kwh * 0.367),
-
-            // Objets pour les détails
-            'latest_consumption' => $latestConsumption,
-            'latest_bilan' => $latestBilan,
             'carbon_rating' => $rating,
 
-            // Suggestions dynamiques
+            // États de l'interface
+            'has_data' => ($latestConsumption !== null),
+            'has_consumption' => ($latestConsumption !== null),
+            'show_update_reminder' => $showUpdateReminder,
+
+            // Suggestions complètes
             'suggestions_carbone' => $this->generateDetailedSuggestions($latestBilan),
             'suggestions_elec' => $this->generateElectricSuggestions($latestConsumption),
         ]);
@@ -103,14 +120,12 @@ class DashboardController extends AbstractController
         $kwh = $cons->getTotalKwh();
         $suggestions = [];
 
-        // 1. Suggestion basée sur le niveau de consommation (Fixe)
         if ($kwh > 400) {
             $suggestions['Consommation'] = "⚡ Votre consommation est au-dessus de la moyenne. Pensez à débrancher les appareils en veille.";
         } else {
             $suggestions['Consommation'] = "💡 Votre consommation est maîtrisée. Continuez ainsi !";
         }
 
-        // 2. Bibliothèque de conseils (Rotation toutes les 10 minutes)
         $conseilsPlus = [
             "🔌 Utilisez des multiprises à interrupteur pour couper vos équipements la nuit.",
             "🧺 Privilégiez les heures creuses et les cycles 'Éco' pour votre lave-linge.",
@@ -124,11 +139,8 @@ class DashboardController extends AbstractController
             "🍞 Utilisez un grille-pain plutôt que le four pour réchauffer du pain."
         ];
 
-        // Logique de rotation : change l'index toutes les 600 secondes (10 min)
         $indexRotation = floor(time() / 600) % count($conseilsPlus);
         $suggestions['Le conseil du moment'] = $conseilsPlus[$indexRotation];
-
-        // Un deuxième conseil différent pour enrichir
         $indexRotation2 = (floor(time() / 600) + 1) % count($conseilsPlus);
         $suggestions['Astuce supplémentaire'] = $conseilsPlus[$indexRotation2];
 
@@ -141,13 +153,12 @@ class DashboardController extends AbstractController
             return [];
 
         $suggestions = [];
-        // Index calculé sur le temps (change toutes les 600 secondes / 10 min)
         $timeIndex = (int) (time() / 600);
 
         // --- LOGEMENT ---
-        $logement = $bilan->getLogement();
-        if ($logement > 0) {
-            if ($logement > 3000) {
+        $logementValue = $bilan->getLogement();
+        if ($logementValue > 0) {
+            if ($logementValue > 3000) {
                 $options = [
                     "🏠 Impact élevé : L'isolation des combles peut réduire votre facture de 30%.",
                     "🏠 Alerte Énergie : Le double vitrage est indispensable pour stopper les pertes de chaleur.",
@@ -155,7 +166,7 @@ class DashboardController extends AbstractController
                     "🏠 Chauffage : Une pompe à chaleur émet 3x moins de CO2 qu'une chaudière gaz."
                 ];
                 $suggestions['Logement'] = $options[$timeIndex % count($options)];
-            } elseif ($logement > 1500) {
+            } elseif ($logementValue > 1500) {
                 $options = [
                     "🏠 Impact modéré : Baisser le chauffage de 1°C, c'est 7% d'économie sur l'année.",
                     "🏠 Astuce : Installez des thermostats connectés pour mieux réguler vos pièces.",
@@ -198,14 +209,14 @@ class DashboardController extends AbstractController
                     "🥗 Impact fort : Remplacer un bœuf par du poulet divise l'impact par 4.",
                     "🥗 Info : La viande rouge est responsable de 50% des émissions alimentaires.",
                     "🥗 Défi : Essayez de cuisiner végétarien 3 jours par semaine.",
-                    "🥗 Astuce : Évitez les produits importés par avion (fraises hors saison, etc)."
+                    "🥗 Astuce : Évitez les produits importés par avion."
                 ];
                 $suggestions['Alimentation'] = $options[$timeIndex % count($options)];
             } elseif ($alimentation > 1200) {
                 $options = [
                     "🥗 Impact moyen : Privilégiez les circuits courts et les produits locaux.",
                     "🥗 Info : Les produits de saison ont une empreinte carbone 10x plus faible.",
-                    "🥗 Conseil : Limitez le gaspillage alimentaire, c'est autant de CO2 économisé."
+                    "🥗 Conseil : Limitez le gaspillage alimentaire."
                 ];
                 $suggestions['Alimentation'] = $options[$timeIndex % count($options)];
             } else {
@@ -221,15 +232,11 @@ class DashboardController extends AbstractController
                     "💻 Impact élevé : Le streaming en 4G consomme 20x plus que le Wi-Fi.",
                     "💻 Matériel : Garder son smartphone 4 ans au lieu de 2 divise son impact par 2.",
                     "💻 Stockage : Supprimez vos mails inutiles et vos vidéos sur le cloud.",
-                    "💻 Astuce : Éteignez votre box internet la nuit pour économiser 30€/an."
+                    "💻 Astuce : Éteignez votre box internet la nuit."
                 ];
                 $suggestions['Numérique'] = $options[$timeIndex % count($options)];
             } else {
-                $options = [
-                    "💻 Sobriété : Votre usage numérique est responsable et maîtrisé.",
-                    "💻 Bravo : Vous faites partie des utilisateurs qui préservent leur matériel."
-                ];
-                $suggestions['Numérique'] = $options[$timeIndex % count($options)];
+                $suggestions['Numérique'] = "💻 Sobriété : Votre usage numérique est responsable et maîtrisé.";
             }
         }
 
@@ -239,9 +246,9 @@ class DashboardController extends AbstractController
             if ($electro > 400) {
                 $options = [
                     "🔌 Conseil : Un lavage à 30°C consomme 3x moins qu'un cycle à 90°C.",
-                    "🔌 Frigo : Dépoussiérer la grille arrière de votre frigo réduit sa conso de 10%.",
+                    "🔌 Frigo : Dépoussiérer la grille arrière réduit sa conso de 10%.",
                     "🔌 Sèche-linge : C'est l'appareil le plus gourmand, privilégiez l'air libre.",
-                    "🔌 Lave-vaisselle : Utilisez le mode 'Eco', il est plus long mais bien plus sobre."
+                    "🔌 Lave-vaisselle : Utilisez le mode 'Eco'."
                 ];
                 $suggestions['Électroménager'] = $options[$timeIndex % count($options)];
             } else {
@@ -255,121 +262,16 @@ class DashboardController extends AbstractController
             if ($textile > 500) {
                 $options = [
                     "👕 Mode : La fabrication d'un jean nécessite 7500 litres d'eau.",
-                    "👕 Conseil : Tournez-vous vers la seconde main (Vinted, Emmaüs, etc).",
+                    "👕 Conseil : Tournez-vous vers la seconde main (Vinted, Emmaüs).",
                     "👕 Info : Acheter 5 vêtements neufs de moins par an réduit l'impact de 200kg CO2.",
-                    "👕 Entretien : Lavez moins souvent vos vêtements pour les faire durer plus longtemps."
+                    "👕 Entretien : Lavez moins souvent vos vêtements pour les faire durer."
                 ];
                 $suggestions['Textile'] = $options[$timeIndex % count($options)];
             } else {
-                $suggestions['Textile'] = "👕 Durable : Vous privilégiez la qualité et la longévité de vos habits.";
+                $suggestions['Textile'] = "👕 Durable : Vous privilégiez la qualité et la longévité.";
             }
         }
 
         return $suggestions;
-    }
-
-    #[Route('/dashboard', name: 'app_dashboard')]
-    public function showDashboard(ArchiveConsumptionRepository $archiveRepo, EntityManagerInterface $entityManager): Response
-    {
-        /** @var User $user */
-        $user = $this->getUser();
-        if (!$user)
-            return $this->redirectToRoute('app_login');
-
-        // 1. Récupérations de base
-        $lodgment = $user->getLodgment();
-        $latestBilan = $user->getBilansCarbone()->last() ?: null;
-        $consumption = $entityManager->getRepository(Consumption::class)->findOneBy(['user' => $user], ['billing_date' => 'DESC']);
-
-        // --- NOUVELLE LOGIQUE : ALERTE MISE À JOUR HEBDOMADAIRE ---
-        $showUpdateReminder = false;
-        if ($consumption) {
-            $lastDate = $consumption->getBillingDate();
-            $now = new \DateTime();
-            $interval = $lastDate->diff($now);
-
-            // Si la dernière saisie date de plus de 7 jours
-            if ($interval->days >= 7) {
-                $showUpdateReminder = true;
-            }
-        } else {
-            // Si aucune donnée n'existe encore
-            $showUpdateReminder = true;
-        }
-        // ---------------------------------------------------------
-
-        // 2. Préparation des données MOIS (garder votre code identique)
-        $archives = $archiveRepo->findBy(['user' => $user], ['archived_at' => 'ASC'], 12);
-        $labelsMois = [];
-        $dataMois = [];
-        foreach ($archives as $archive) {
-            $labelsMois[] = $archive->getArchivedAt()->format('d/m');
-            $dataMois[] = $archive->getTotalKwh();
-        }
-
-        // 3. Préparation des données JOUR (garder votre code identique)
-        $labelsJour = [];
-        $dataJour = [];
-        $lastTotal = !empty($dataMois) ? end($dataMois) : 0;
-
-        $joursFr = [
-            'Mon' => 'Lun',
-            'Tue' => 'Mar',
-            'Wed' => 'Mer',
-            'Thu' => 'Jeu',
-            'Fri' => 'Ven',
-            'Sat' => 'Sam',
-            'Sun' => 'Dim'
-        ];
-
-        for ($i = 6; $i >= 0; $i--) {
-            $date = new \DateTime("-$i days");
-            $dayEn = $date->format('D');
-            $dayFr = $joursFr[$dayEn];
-            $labelsJour[] = $dayFr . ' ' . $date->format('d/m');
-            $dataJour[] = round(($lastTotal / 30) * (rand(85, 115) / 100), 1);
-        }
-
-        // 4. Préparation des données SEMAINE (garder votre code identique)
-        $dataSemaine = [
-            round($lastTotal / 4.2, 1),
-            round($lastTotal / 3.8, 1),
-            round($lastTotal / 4.1, 1),
-            round($lastTotal / 4, 1)
-        ];
-
-        // 5. Textes d'information contextuels
-        $infoMois = "Historique basé sur vos 12 derniers relevés validés.";
-        $infoSemaine = "Estimation de la répartition sur les 4 dernières semaines.";
-        $infoJour = "Détail estimé du " . $labelsJour[0] . " au " . end($labelsJour) . ".";
-
-        // 6. Calcul de la note Carbone
-        $rating = $latestBilan ? $this->calculateCarbonGrade($latestBilan->getTotal()) : ['label' => '?', 'color' => '#6c757d'];
-
-        return $this->render('dashboard.html.twig', [
-            'labelsMois' => json_encode($labelsMois),
-            'dataMois' => json_encode($dataMois),
-            'labelsJour' => json_encode($labelsJour),
-            'dataJour' => json_encode($dataJour),
-            'dataSemaine' => json_encode($dataSemaine),
-
-            'infoMois' => $infoMois,
-            'infoSemaine' => $infoSemaine,
-            'infoJour' => $infoJour,
-
-            'lodgment' => $lodgment,
-            'logement' => $lodgment,
-            'latest_bilan' => $latestBilan,
-            'consumption' => $consumption,
-            'carbon_rating' => $rating,
-            'current_month_consumption' => $consumption ? $consumption->getTotalKwh() : 0,
-            'current_month_cost' => $consumption ? $consumption->getEstimatedPrice() : 0,
-            'co2_emissions' => $consumption ? round($consumption->getTotalKwh() * 0.367) : 0,
-            'suggestions_carbone' => $this->generateDetailedSuggestions($latestBilan),
-            'suggestions_elec' => $this->generateElectricSuggestions($consumption),
-
-            // On envoie la variable à Twig
-            'show_update_reminder' => $showUpdateReminder,
-        ]);
     }
 }
