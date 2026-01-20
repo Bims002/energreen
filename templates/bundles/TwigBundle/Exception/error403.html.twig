@@ -64,13 +64,31 @@
         background-color: #362612;
         transform: translateY(-2px);
     }
+    .btn-back {
+        background-color: #6c757d;
+        color: white;
+    }
+    .btn-back:hover {
+        background-color: #5a6268;
+        transform: translateY(-2px);
+    }
 </style>
 <div class="error-container">
     <h1>403</h1>
     <h2>Accès refusé</h2>
     <p>Vous n'avez pas la permission d'accéder à cette page.</p>
+    <button onclick="goBack()" class="btn-action btn-back" style="border: none; cursor: pointer; background-color: #6c757d; color: white; margin: 0 10px;">Retour</button>
     <a href="/dashboard" class="btn-action btn-dashboard">Retour au tableau de bord</a>
     <a href="/login" class="btn-action btn-login">Se connecter</a>
 </div>
+<script>
+    function goBack() {
+        if (window.history.length > 1) {
+            window.history.back();
+        } else {
+            window.location.href = '/dashboard';
+        }
+    }
+</script>
 </body>
 </html>

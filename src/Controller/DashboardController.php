@@ -13,72 +13,6 @@ use App\Entity\BilanCarbone;
 
 class DashboardController extends AbstractController
 {
-    #[Route('/dashboard', name: 'app_dashboard')]
-    public function index(EntityManagerInterface $entityManager): Response
-    {
-        // 1. Vérification de la connexion
-        $user = $this->getUser();
-        if (!$user) {
-            return $this->redirectToRoute('app_login');
-        }
-
-        // 2. Récupération des Repositories
-        $consumptionRepo = $entityManager->getRepository(Consumption::class);
-        $lodgmentRepo = $entityManager->getRepository(Lodgment::class);
-        $bilanRepo = $entityManager->getRepository(BilanCarbone::class);
-
-        // 3. Récupération du logement (Sera null si non rempli, ce qui déclenchera le flou dans Twig)
-        $userLodgment = $lodgmentRepo->findOneBy(['user' => $user]);
-
-        // 4. Récupération des dernières données de consommation et bilan
-        $latestConsumption = $consumptionRepo->findOneBy(
-            ['user' => $user],
-            ['billing_date' => 'DESC']
-        );
-
-        $latestBilan = $bilanRepo->findOneBy(
-            ['utilisateur' => $user],
-            ['createdAt' => 'DESC']
-        );
-
-        // 5. Préparation des variables de calcul (Valeurs par défaut à 0)
-        $kwh = $latestConsumption ? $latestConsumption->getTotalKwh() : 0;
-        $price = $latestConsumption ? $latestConsumption->getEstimatedPrice() : 0;
-
-        // 6. Calcul de la note Carbone (A à F)
-        $rating = ['label' => '?', 'color' => '#6c757d'];
-        if ($latestBilan) {
-            $rating = $this->calculateCarbonGrade($latestBilan->getTotal());
-        }
-
-        // 7. Envoi de toutes les données à la vue Twig
-        return $this->render('dashboard.html.twig', [
-            // Indispensable pour la condition {% if user_lodgment is null %} dans votre Twig
-            'user_lodgment' => $userLodgment,
-
-            // Utilisé pour la variable 'logement' que vous appelez ailleurs
-            'logement' => $userLodgment,
-            'consumption' => $latestConsumption,
-
-            // Variables d'état pour les graphiques
-            'has_data' => ($latestConsumption !== null),
-            'has_consumption' => ($latestConsumption !== null),
-
-            // Valeurs calculées pour les cartes
-            'current_month_consumption' => $kwh,
-            'current_month_cost' => $price,
-            'co2_emissions' => round($kwh * 0.367),
-
-            // Objets pour les détails
-            'latest_consumption' => $latestConsumption,
-            'latest_bilan' => $latestBilan,
-            'carbon_rating' => $rating,
-
-            // Suggestions dynamiques
-            'suggestions_carbone' => $this->generateDetailedSuggestions($latestBilan),
-            'suggestions_elec' => $this->generateElectricSuggestions($latestConsumption),
-        ]);
-    }
 
     private function calculateCarbonGrade(float $total): array
     {
@@ -271,14 +205,31 @@ class DashboardController extends AbstractController
     #[Route('/dashboard', name: 'app_dashboard')]
     public function showDashboard(ArchiveConsumptionRepository $archiveRepo, EntityManagerInterface $entityManager): Response
     {
-        /** @var User $user */
+        /** @var \App\Entity\User $user */
         $user = $this->getUser();
-        if (!$user)
+        if (!$user) {
             return $this->redirectToRoute('app_login');
+        }
 
-        // 1. Récupérations de base
+        // 1. Récupérations de base avec gestion d'erreurs
         $lodgment = $user->getLodgment();
-        $latestBilan = $user->getBilansCarbone()->last() ?: null;
+        
+        // Récupération sécurisée du dernier bilan
+        $latestBilan = null;
+        try {
+            $bilansCarbone = $user->getBilansCarbone();
+            if ($bilansCarbone && !$bilansCarbone->isEmpty()) {
+                $latestBilan = $bilansCarbone->last();
+            }
+        } catch (\Exception $e) {
+            // Si erreur, on récupère via le repository
+            $bilanRepo = $entityManager->getRepository(BilanCarbone::class);
+            $latestBilan = $bilanRepo->findOneBy(
+                ['utilisateur' => $user],
+                ['createdAt' => 'DESC']
+            );
+        }
+        
         $consumption = $entityManager->getRepository(Consumption::class)->findOneBy(['user' => $user], ['billing_date' => 'DESC']);
 
         // --- NOUVELLE LOGIQUE : ALERTE MISE À JOUR HEBDOMADAIRE ---
@@ -359,12 +310,16 @@ class DashboardController extends AbstractController
 
             'lodgment' => $lodgment,
             'logement' => $lodgment,
+            'user_lodgment' => $lodgment, // Ajout pour compatibilité
             'latest_bilan' => $latestBilan,
             'consumption' => $consumption,
+            'latest_consumption' => $consumption, // Ajout pour compatibilité
             'carbon_rating' => $rating,
             'current_month_consumption' => $consumption ? $consumption->getTotalKwh() : 0,
             'current_month_cost' => $consumption ? $consumption->getEstimatedPrice() : 0,
             'co2_emissions' => $consumption ? round($consumption->getTotalKwh() * 0.367) : 0,
+            'has_data' => ($consumption !== null),
+            'has_consumption' => ($consumption !== null),
             'suggestions_carbone' => $this->generateDetailedSuggestions($latestBilan),
             'suggestions_elec' => $this->generateElectricSuggestions($consumption),
 
