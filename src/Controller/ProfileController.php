@@ -3,16 +3,21 @@
 namespace App\Controller;
 
 use App\Entity\User;
-use App\Entity\Lodgment; // Ajout nécessaire
+use App\Service\Profile\ProfileServiceInterface;
+use App\Service\Form\FormDataExtractorServiceInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 final class ProfileController extends AbstractController
 {
+    public function __construct(
+        private ProfileServiceInterface $profileService,
+        private FormDataExtractorServiceInterface $formDataExtractor
+    ) {
+    }
     #[Route('/profil', name: 'app_energreen_profil')]
     public function index(): Response
     {
@@ -28,7 +33,7 @@ final class ProfileController extends AbstractController
     }
 
     #[Route('/profil/verify-password', name: 'app_profile_verify_password', methods: ['POST'])]
-    public function verifyPassword(Request $request, UserPasswordHasherInterface $hasher): Response
+    public function verifyPassword(Request $request): Response
     {
         $user = $this->getUser();
 
@@ -36,14 +41,14 @@ final class ProfileController extends AbstractController
             return $this->json(['success' => false, 'message' => 'Non authentifié']);
         }
 
-        $data = json_decode($request->getContent(), true);
-        $password = $data['password'] ?? '';
+        $jsonData = $this->formDataExtractor->extractJsonData($request);
+        $password = $jsonData['password'] ?? '';
 
         if (empty($password)) {
             return $this->json(['success' => false, 'message' => 'Mot de passe requis']);
         }
 
-        $isValid = $hasher->isPasswordValid($user, $password);
+        $isValid = $this->profileService->verifyPassword($user, $password);
 
         return $this->json(['success' => $isValid]);
     }
@@ -63,7 +68,7 @@ final class ProfileController extends AbstractController
     }
 
     #[Route('/profil/update', name: 'app_profile_update', methods: ['POST'])]
-    public function update(Request $request, EntityManagerInterface $em, UserPasswordHasherInterface $hasher): Response
+    public function update(Request $request, EntityManagerInterface $em): Response
     {
         /** @var User $user */
         $user = $this->getUser();
@@ -79,42 +84,16 @@ final class ProfileController extends AbstractController
             return $this->redirectToRoute('app_profile_edit');
         }
 
-        $user->setEmail($request->request->get('email'));
-        $user->setNom($request->request->get('nom'));
-        $user->setPrenom($request->request->get('prenom'));
+        // Récupération des données du formulaire
+        $data = $this->formDataExtractor->extractProfileData($request);
 
-        // --- DEBUT DES AJOUTS POUR LODGMENT ---
-        $lodgment = $user->getLodgment();
-
-        // Si l'utilisateur n'a pas de logement, on le crée
-        if (!$lodgment) {
-            $lodgment = new Lodgment();
-            $lodgment->setUser($user);
-            $em->persist($lodgment);
+        try {
+            $this->profileService->updateProfile($user, $data);
+            $this->addFlash('success', 'Profil et logement mis à jour avec succès !');
+        } catch (\InvalidArgumentException $e) {
+            $this->addFlash('error', $e->getMessage());
         }
 
-        $lodgment->setLodgmentType($request->request->get('lodgment_type'));
-        $lodgment->setSurface((int) $request->request->get('surface'));
-        $lodgment->setOccupant((int) $request->request->get('occupant'));
-        // --- FIN DES AJOUTS POUR LODGMENT ---
-
-        // Hashage du mot de passe s'il est modifié
-        $newPassword = $request->request->get('new_password');
-        $confirmPassword = $request->request->get('confirm_password');
-
-        if (!empty($newPassword)) {
-            if ($newPassword !== $confirmPassword) {
-                $this->addFlash('error', 'Les mots de passe ne correspondent pas.');
-                return $this->redirectToRoute('app_profile_edit');
-            }
-
-            $hashedPassword = $hasher->hashPassword($user, $newPassword);
-            $user->setPassword($hashedPassword);
-        }
-
-        $em->flush();
-
-        $this->addFlash('success', 'Profil et logement mis à jour avec succès !');
         return $this->redirectToRoute('app_profile_edit');
     }
 
@@ -136,8 +115,7 @@ final class ProfileController extends AbstractController
         $this->container->get('security.token_storage')->setToken(null);
         $request->getSession()->invalidate();
 
-        $em->remove($user);
-        $em->flush();
+        $this->profileService->deleteAccount($user);
 
         return $this->redirectToRoute('app_home');
     }
