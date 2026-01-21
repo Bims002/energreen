@@ -3,6 +3,7 @@ framework:
         # Aucune configuration de transport spécifique pour éviter les timeouts
         # chatter_transports: []
         # texter_transports: []
+        # email_transports: []
 
         channel_policy:
             # En cas d'urgence, utiliser l'email (plus sûr que de chercher des SMS/Chat non configurés)
