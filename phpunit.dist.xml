@@ -15,6 +15,11 @@
         <ini name="error_reporting" value="-1" />
         <server name="APP_ENV" value="test" force="true" />
         <server name="SHELL_VERBOSITY" value="-1" />
+
+        <!-- ###+ pixelopen/cloudflare-turnstile-bundle ### -->
+        <env name="TURNSTILE_KEY" value="3x00000000000000000000FF"/>
+        <env name="TURNSTILE_SECRET" value="1x0000000000000000000000000000000AA"/>
+        <!-- ###- pixelopen/cloudflare-turnstile-bundle ### -->
     </php>
 
     <testsuites>
