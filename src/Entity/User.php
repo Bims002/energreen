@@ -246,4 +246,28 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         }
         return $this;
     }
+
+    public function addBilansCarbone(BilanCarbone $bilansCarbone): static
+    {
+        if (!$this->bilansCarbone->contains($bilansCarbone)) {
+            $this->bilansCarbone->add($bilansCarbone);
+            $bilansCarbone->setUtilisateur($this);
+        }
+
+        return $this;
+    }
+
+    public function removeBilansCarbone(BilanCarbone $bilansCarbone): static
+    {
+        if ($this->bilansCarbone->removeElement($bilansCarbone)) {
+            // set the owning side to null (unless already changed)
+            if ($bilansCarbone->getUtilisateur() === $this) {
+                $bilansCarbone->setUtilisateur(null);
+            }
+        }
+
+        return $this;
+    }
 }
+
+

@@ -72,4 +72,11 @@ class ArchiveConsumption
     {
         return $this->archived_at;
     }
+
+    public function setArchivedAt(\DateTimeImmutable $archived_at): static
+    {
+        $this->archived_at = $archived_at;
+
+        return $this;
+    }
 }
