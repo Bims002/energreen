@@ -8,15 +8,15 @@ class CarbonService implements CarbonServiceInterface
 {
     public function calculateCarbonGrade(float $total): array
     {
-        if ($total < 2000) {
+        if ($total < 6000) {
             return ['label' => 'A', 'color' => '#00C853'];
-        } elseif ($total < 4000) {
-            return ['label' => 'B', 'color' => '#64DD17'];
-        } elseif ($total < 6000) {
-            return ['label' => 'C', 'color' => '#FFD600'];
         } elseif ($total < 8000) {
-            return ['label' => 'D', 'color' => '#FF6F00'];
+            return ['label' => 'B', 'color' => '#64DD17'];
+        } elseif ($total < 9000) {
+            return ['label' => 'C', 'color' => '#FFD600'];
         } elseif ($total < 10000) {
+            return ['label' => 'D', 'color' => '#FF6F00'];
+        } elseif ($total < 11000) {
             return ['label' => 'E', 'color' => '#DD2C00'];
         } else {
             return ['label' => 'F', 'color' => '#B71C1C'];

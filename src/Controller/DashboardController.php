@@ -65,7 +65,7 @@ class DashboardController extends AbstractController
             // Données Graphique (Mois seulement)
             'labelsMois' => json_encode($chartData['labels']),
             'dataMois' => json_encode($chartData['data']),
-            'infoMois' => "Historique basé sur vos 12 derniers relevés validés.",
+            'infoMois' => !empty($chartData['data']) ? "Consommation sur les 12 derniers relevés" : "Aucun historique disponible",
 
             // Objets pour Twig (Indispensables pour vos conditions IF)
             'user_lodgment' => $userLodgment,

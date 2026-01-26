@@ -6,6 +6,7 @@ use App\Entity\ArchiveConsumption;
 use App\Entity\Consumption;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
+use DateTimeImmutable;
 
 class ConsumptionService implements ConsumptionServiceInterface
 {
@@ -51,40 +52,33 @@ class ConsumptionService implements ConsumptionServiceInterface
 
     public function saveConsumption(User $user, float $totalKwh, float $totalPrice): Consumption
     {
-        // 1. Chercher TOUTES les consommations existantes pour cet utilisateur
-        $consumptions = $this->entityManager->getRepository(Consumption::class)->findBy(['user' => $user]);
+        // 1️⃣ ARCHIVER LE RÉSULTAT COURANT (IMMÉDIATEMENT)
+        $archive = new ArchiveConsumption();
+        $archive->setUser($user);
+        $archive->setTotalKwh($totalKwh);
+        $archive->setEstimatedPrice($totalPrice);
+        $archive->setArchivedAt(new DateTimeImmutable());
 
-        if (!empty($consumptions)) {
-            // On prend la plus récente pour l'archivage
-            $latest = end($consumptions);
+        $this->entityManager->persist($archive);
 
-            if ($latest->getTotalKwh() > 0) {
-                $archive = new ArchiveConsumption();
-                $archive->setUser($user);
-                $archive->setTotalKwh($latest->getTotalKwh());
-                $archive->setEstimatedPrice($latest->getEstimatedPrice());
-                $this->entityManager->persist($archive);
-            }
+        // 2️⃣ METTRE À JOUR OU CRÉER LA CONSOMMATION COURANTE
+        $consumption = $this->entityManager
+            ->getRepository(Consumption::class)
+            ->findOneBy(['user' => $user]);
 
-            // 2. SUPPRIMER TOUTES les anciennes lignes pour éviter les doublons
-            foreach ($consumptions as $oldConso) {
-                $this->entityManager->remove($oldConso);
-            }
-            // On flush les suppressions avant de recréer la ligne propre
-            $this->entityManager->flush();
+        if (!$consumption) {
+            $consumption = new Consumption();
+            $consumption->setUser($user);
         }
 
-        // 3. Créer la ligne UNIQUE et propre
-        $consumption = new Consumption();
-        $consumption->setUser($user);
         $consumption->setTotalKwh($totalKwh);
         $consumption->setEstimatedPrice($totalPrice);
         $consumption->setBillingDate(new \DateTime());
-        $consumption->setPastConsumption(0);
 
         $this->entityManager->persist($consumption);
         $this->entityManager->flush();
 
         return $consumption;
     }
+
 }

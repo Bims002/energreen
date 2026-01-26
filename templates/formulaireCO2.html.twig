@@ -568,100 +568,155 @@
 
   </form>
 
-  {# --- RÉSULTATS + CAMEMBERT --- #}
-  {% if results is defined and results %}
-    <div class="mt-5 soft-chart">
-      <h2 class="h4 mb-3 fw-bold">Résultats</h2>
-      <p class="mb-3"><strong>Total :</strong> {{ total }} kgCO₂e</p>
+  {# --- RÉSULTATS + DONUT --- #}
+{% if results is defined and results %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-      <div class="row g-4 align-items-center">
-        <div class="col-md-6">
-          <canvas id="carbonPie" height="280"></canvas>
-        </div>
-        <div class="col-md-6">
-          <ul class="mb-0">
-            {% for axe, valeur in results %}
-              <li><strong>{{ axe }}</strong> : {{ valeur }} kgCO₂e</li>
-            {% endfor %}
-          </ul>
-        </div>
-      </div>
+<div class="mt-5 p-4 rounded-4 shadow-sm bg-white border border-light animate__animated animate__fadeIn">
+    <div class="text-center mb-5">
+        <h2 class="display-6 fw-bold text-success">Votre Empreinte Carbone</h2>
+        <p class="text-muted">Analyse annuelle détaillée de votre impact environnemental</p>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-      window.addEventListener('load', function () {
-        const labels = {{ results|keys|json_encode|raw }};
-        const values = [
-          {% for axe, valeur in results %}
-            {{ valeur }}{% if not loop.last %},{% endif %}
-          {% endfor %}
-        ];
+    <div class="row g-5 align-items-center">
+        <div class="col-lg-5 position-relative" style="min-height: 350px;">
+            <canvas id="carbonPie"></canvas>
+            <div class="chart-center-label">
+                <div class="text-muted small text-uppercase">Total</div>
+                <div class="h2 fw-bold mb-0 text-dark">{{ total|number_format(0, ',', ' ') }}</div>
+                <div class="text-muted small">kgCO₂e</div>
+            </div>
+        </div>
 
-        // Palette de couleurs Energreen
-        const energreenPalette = [
-          '#00d60eff', // Vert foncé (Logement)
-          '#401ddbff', // Marron (Numérique)
-          '#f0f01dff', // Vert moyen (Alimentation)
-          '#e82222ff', // Marron clair (Transports)
-          '#31ece5ff', // Vert grisé (Électroménager)
-          '#ea32f1ff'  // Sable / Beige (Textile)
-        ];
+        <div class="col-lg-7">
+            <div class="row g-3">
+                {% for axe, valeur in results %}
+                <div class="col-md-6">
+                    <div class="p-3 rounded-3 border-start border-4 shadow-sm h-100 bg-white result-card" 
+                         style="border-left-color: {{ cycle(['#00d60e', '#401ddb', '#f0f01d', '#e82222', '#31ece5', '#ea32f1'], loop.index0) }}; transition: all 0.3s ease;">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="fw-bold text-dark">
+                                {{ axe }}
+                                {% if axe == 'Logement' %}
+                                    <i class="bi bi-question-circle-fill text-info ms-1" 
+                                       style="cursor: help;" 
+                                       data-bs-toggle="tooltip" 
+                                       title="Basé sur {{ occupant|default(1) }} occupant(s) et {{ surface|default(0) }} m²."></i>
+                                {% endif %}
+                            </span>
+                            <span class="badge bg-light text-dark rounded-pill border">{{ total > 0 ? ((valeur / total) * 100)|round(1) : 0 }}%</span>
+                        </div>
+                        <div class="h5 mb-0">{{ valeur|number_format(0, ',', ' ') }} <small class="text-muted small">kg</small></div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
 
-        const ctx = document.getElementById('carbonPie').getContext('2d');
-        new Chart(ctx, {
-          type: 'pie',
-          data: { 
-            labels: labels, 
-            datasets: [{ 
-              data: values,
-              backgroundColor: energreenPalette, // Application des couleurs
-              borderColor: '#ffffff',
-              borderWidth: 2
-            }] 
-          },
-          options: {
-            responsive: true,
-            plugins: {
-              legend: {
-                position: 'bottom',
-                labels: {
-                  color: '#1a3020', // Texte de la légende en vert foncé
-                  font: {
-                    family: 'Montserrat',
-                    size: 12
-                  }
-                }
-              },
-              tooltip: {
-                callbacks: {
-                  label: function(context) {
-                    const v = context.raw;
-                    const t = values.reduce((a,b) => a + b, 0);
-                    const pct = t ? (v / t * 100).toFixed(1) : 0;
-                    return `${context.label}: ${v} kgCO₂e (${pct}%)`;
-                  }
-                }
-              }
-            }
-          }
-        });
-      });
-    </script>
-  {% endif %}
-  <br>
-<footer>
-  <div>
-    <h5 class="mb-2">Méthodologie et Sources</h5>
-    <p class="mb-0 small">
-      Les calculs de ce formulaire sont effectués à partir des données de la <strong>Base Empreinte® v23</strong> de l'ADEME.
-      L'impact carbone inclut l'Analyse de Cycle de Vie (fabrication, transport, usage et fin de vie) pour les biens de consommation.
-      <br>
-      <a href="https://base-empreinte.ademe.fr/" target="_blank">Consulter la source officielle (ADEME)</a>.
-    </p>
-  </div>
-</footer>
+            <div class="mt-4 p-4 rounded-4 bg-white border shadow-sm mx-auto" style="max-width: 500px; transition: transform 0.3s ease;">
+              <div class="d-flex justify-content-around align-items-center">
+                  <div class="text-center px-3">
+                      <div class="h3 fw-bold mb-0 text-primary">{{ (total / 2500)|round(1) }}</div>
+                      <div class="text-muted small text-uppercase" style="font-size: 0.7rem; letter-spacing: 1px;">Vols Paris-NY</div>
+                  </div>
 
+                  <div class="vr text-muted opacity-25" style="height: 40px;"></div>
+
+                  <div class="text-center px-3">
+                      <div class="h3 fw-bold mb-0 text-success">{{ (total / 25)|round(0) }}</div>
+                      <div class="text-muted small text-uppercase" style="font-size: 0.7rem; letter-spacing: 1px;">Arbres à planter</div>
+                  </div>
+              </div>
+          </div>
+        </div>
+    </div>
 </div>
+
+<footer class="mt-5 opacity-75">
+        <div class="py-3 border-top border-light-subtle" style="font-size: 0.75rem;">
+        <center>
+            <h6 class="fw-bold text-secondary mb-1" style="font-size: 0.8rem;">Méthodologie et Sources</h6>
+            <p class="mb-0 text-muted-50">
+                Les calculs sont issus de la <strong>Base Empreinte® v23</strong> de l'ADEME.
+                L'impact inclut l'Analyse de Cycle de Vie (fabrication, transport, usage et fin de vie).
+                <br>
+                <a href="https://base-empreinte.ademe.fr/" target="_blank" class="text-decoration-none text-info opacity-50">Consulter la source officielle (ADEME)</a>.
+            </p>
+        </center>
+        </div>
+    </footer>
+</div> {# Fermeture du container principal .soft-wrap #}
+
+<style>
+    .chart-center-label {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        width: 100%;
+        pointer-events: none;
+        z-index: 5;
+    }
+
+    .result-card:hover {
+        transform: translateY(-5px) scale(1.03);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important;
+        cursor: pointer;
+    }
+
+    /* Assure que le canvas prend bien sa place */
+    #carbonPie {
+        max-width: 100% !important;
+        max-height: 350px !important;
+    }
+</style>
+
+<script>
+// On utilise une fonction auto-exécutée pour isoler le scope
+(function() {
+    function initChart() {
+        const el = document.getElementById('carbonPie');
+        if (!el) return;
+
+        const dataValues = [{% for v in results %}{{ v }}{{ not loop.last ? ',' : '' }}{% endfor %}];
+        const dataLabels = {{ results|keys|json_encode|raw }};
+
+        new Chart(el, {
+            type: 'doughnut',
+            data: {
+                labels: dataLabels,
+                datasets: [{
+                    data: dataValues,
+                    backgroundColor: ['#00d60e', '#401ddb', '#f0f01d', '#e82222', '#31ece5', '#ea32f1'],
+                    borderWidth: 2,
+                    hoverOffset: 30
+                }]
+            },
+            options: {
+                cutout: '80%',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+
+        // Initialisation tooltips Bootstrap
+        if (typeof bootstrap !== 'undefined') {
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+            tooltipTriggerList.map(function (el) { return new bootstrap.Tooltip(el) });
+        }
+    }
+
+    // Lance l'initialisation au chargement du DOM
+    if (document.readyState === 'complete') {
+        initChart();
+    } else {
+        window.addEventListener('load', initChart);
+    }
+})();
+</script>
+{% endif %}
 
 {% endblock %}
