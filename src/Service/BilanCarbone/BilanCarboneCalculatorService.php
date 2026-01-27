@@ -13,17 +13,24 @@ class BilanCarboneCalculatorService implements BilanCarboneCalculatorServiceInte
         if ($nbOccupants < 1)
             $nbOccupants = 1;
 
-        // --- 1. LOGEMENT ---
-        $consoBaseChauffage = (float) ($data['surface'] ?? 0) * 110;
-        $scoreLogementTotal = $consoBaseChauffage * (float) ($data['isolation_etat'] ?? 1) * (float) ($data['energie_principale'] ?? 0);
+        // Récupération des données
+        $surface = (float) ($data['surface'] ?? 0);
+        $isolation = (float) ($data['isolation_etat'] ?? 1);
+        $facteurEnergie = (float) ($data['energie_principale'] ?? 0.052);
+        $occupants = (int) ($data['occupant'] ?? 1);
 
+        // Calcul du chauffage
+        $consoKwhBase = $surface * 110;
+        $emissionsChauffage = ($consoKwhBase * $isolation * $facteurEnergie);
+
+        // On divise le chauffage par le nombre d'occupants
+        $scoreLogementTotal = $emissionsChauffage / $occupants;
+
+        // On ajoute les autres postes
         $scoreLogementTotal += (float) ($data['eau_chaude'] ?? 0);
         $scoreLogementTotal += (float) ($data['cuisson'] ?? 0);
+        $scoreLogementTotal += ((float) ($data['clim_jours'] ?? 0) * 0.6);
         $scoreLogementTotal += (float) ($data['piscine'] ?? 0);
-        $scoreLogementTotal += (float) ($data['clim_jours'] ?? 0) * 0.6;
-
-        // DIVISION PAR OCCUPANT
-        $scoreLogement = $scoreLogementTotal / $nbOccupants;
 
         // --- 2. NUMÉRIQUE (Version Amortie) ---
         $fabrication_num = (
@@ -115,10 +122,10 @@ class BilanCarboneCalculatorService implements BilanCarboneCalculatorServiceInte
         $scoreTextile += (float) ($data['entretien_textile'] ?? 0);
 
         // --- TOTAL ---
-        $total = $scoreLogement + $scoreNumerique + $scoreElectro + $scoreAlim + $scoreTransports + $scoreTextile;
+        $total = $scoreLogementTotal + $scoreNumerique + $scoreElectro + $scoreAlim + $scoreTransports + $scoreTextile;
 
         return [
-            'logement' => round($scoreLogement, 2),
+            'logement' => round($scoreLogementTotal, 2),
             'numerique' => round($scoreNumerique, 2),
             'electromenager' => round($scoreElectro, 2),
             'alimentation' => round($scoreAlim, 2),

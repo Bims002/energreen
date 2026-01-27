@@ -8,6 +8,7 @@ use App\Repository\ArchiveConsumptionRepository;
 
 class DashboardDataService implements DashboardDataServiceInterface
 {
+    private float $co2Factor = 0.052;
     public function __construct(
         private ArchiveConsumptionRepository $archiveRepo
     ) {
@@ -48,9 +49,9 @@ class DashboardDataService implements DashboardDataServiceInterface
         ];
     }
 
-    public function calculateCO2Emissions(float $kwh): float
+    public function calculateCO2Emissions(?float $kwh): float
     {
-        // Facteur d'émission moyen en France : 0.367 kg CO2/kWh
-        return round($kwh * 0.367);
+        $kwh = $kwh ?? 0.0; // Force à 0 si null
+        return $kwh * $this->co2Factor;
     }
 }

@@ -82,7 +82,32 @@
 
     <div class="footer-text">
         En envoyant ce message, vous acceptez notre <br>
-        <a href="#" style="color: #387d38;">politique de confidentialité</a>.
+        <a href="#" style="color: #387d38;" data-bs-toggle="modal" data-bs-target="#modalConditions">
+            politique de confidentialité
+        </a>.
+    </div>
+    <div class="modal fade" id="modalConditions" tabindex="-1" aria-labelledby="modalConditionsLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content" style="border-radius: 20px; border: none;">
+                <div class="modal-header" style="border-bottom: 1px solid #f0f7ff;">
+                    <h5 class="modal-title fw-bold" id="modalConditionsLabel" style="color: #064523;">Politique de confidentialité</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4 text-start" style="font-size: 0.9rem; color: #444;">
+                    <h6 class="fw-bold">1. Collecte des données</h6>
+                    <p>Les informations recueillies via ce formulaire (nom, e-mail, sujet, message) sont nécessaires pour traiter votre demande de contact.</p>
+                    
+                    <h6 class="fw-bold">2. Utilisation des données</h6>
+                    <p>Ces données sont utilisées exclusivement par Energreen pour répondre à vos questions. Elles ne seront jamais cédées ou vendues à des tiers.</p>
+                    
+                    <h6 class="fw-bold">3. Conservation</h6>
+                    <p>Vos données sont conservées pendant la durée nécessaire au traitement de votre demande, puis supprimées conformément à la réglementation RGPD.</p>
+                </div>
+                <div class="modal-footer" style="border-top: none;">
+                    <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal" style="background: #6bb16b; border: none;">J'ai compris</button>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}

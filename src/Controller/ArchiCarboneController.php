@@ -14,15 +14,19 @@ class ArchiCarboneController extends AbstractController
     #[Route('/recalculer', name: 'app_bilan_recalculate')]
     public function recalculate(BilanCarboneManager $bilanManager): Response
     {
+        /** @var User $user */
         $user = $this->getUser();
 
-        // Vérifie si dans ton entité User la méthode s'appelle getBilanCarbone() ou getBilansCarbone()
+        // On récupère le bilan actuel (l'unique)
         $oldBilan = $user->getBilanCarbone();
 
         if ($oldBilan) {
-            $bilanManager->archiveAndDeleteOldBilan($oldBilan);
+            // Cette méthode archive dans archive_bilan_carbone 
+            // ET supprime dans bilan_carbone
+            $bilanManager->archiveOldBilan($oldBilan);
         }
 
+        // On redirige vers le formulaire pour créer le NOUVEAU bilan unique
         return $this->redirectToRoute('app_bilan_new');
     }
 }

@@ -18,6 +18,25 @@
 		color: var(--vert-energreen);
 	}
 
+	.nav-pills .nav-link {
+		background-color: #f4f7f6; /* Gris clair de fond */
+		color: #1a3020 !important;
+		border: 1px solid #ced4da !important;
+		transition: all 0.2s ease-in-out;
+	}
+
+	.nav-pills .nav-link.active {
+		background-color: #1a3020 !important; /* Ton vert EnerGreen sombre */
+		color: white !important;
+		border-color: #1a3020 !important;
+	}
+
+	/* Optionnel : petit effet au survol sur le bouton inactif */
+	.nav-pills .nav-link:not(.active):hover {
+		background-color: #e2e8e6;
+		border-color: #adb5bd !important;
+	}
+
 	h1,
 	h2 {
 		font-family: 'Roboto', sans-serif;
@@ -130,25 +149,14 @@
 	</div>
 {% endfor %}
 
-{% if show_update_reminder %}
-	<div class="alert alert-info" style="border-left: 5px solid #2e7d32; background-color: #e8f5e9; max-width: 1200px; margin: 20px auto 0 auto;">
-		<i class="fas fa-calendar-alt me-2"></i>
-		Cela fait plus d'une semaine que vous n'avez pas mis à jour vos données d'électricité.
-		<strong>
-			<a href="{{ path('app_calculator_consumption') }}" style="color: #2e7d32; text-decoration: underline;">
-				Calculez votre consommation actuelle
-			</a>
-		</strong>
-		pour un meilleur suivi !
-	</div>
-{% endif %}
+
 
 <div
 	class="dashboard-grid">
 	{# SECTION GÉRER LES DONNÉES #}
 	{% if logement is null %}
 		<section class="card span-3 onboarding-active" style="display: flex; justify-content: space-between; align-items: center; background: #f0f4f1;">
-			<div>
+			<div class="text-center">
 				<h2 style="color: #27ae60; margin: 0;">Gérer vos données</h2>
 				<p style="margin: 5px 0 0 0;">Saisissez vos données de consommation pour débloquer votre analyse.</p>
 			</div>
@@ -159,16 +167,48 @@
 	<div
 		class="span-3 dashboard-grid {{ logement is null ? 'dashboard-locked' : '' }}" style="padding: 0; margin: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
 
-		{# Graphique Consommation Électrique #}
-		<section class="card span-2">
-			<div style="display: flex; justify-content: space-between; align-items: center;">
+		{# Graphique Consommation Électrique / carbone #}
+		<section class="card span-2 shadow-sm border-0 rounded-4">
+			<div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
 				<div>
-					<h2 style="font-size: 1.4rem; margin-bottom: 5px;">Historique de la consommation</h2>
-					<p id="chartDescription" style="margin: 0; color: #666;">{{ infoMois }}</p>
+					<h2 class="h5 fw-bold mb-1">Historique & Analyses</h2>
+					<p id="chartDescription" class="text-muted small mb-0">{{ infoMois }}</p>
+				</div>
+				
+				{# Groupe de boutons pour le switch #}
+				<div class="ms-auto">
+					<ul class="nav nav-pills" id="chartTabs" role="tablist">
+						<li class="nav-item">
+							<button class="nav-link py-1 px-3" 
+									id="btn-carbon" 
+									onclick="switchChart('carbon')" 
+									type="button" 
+									style="font-size: 0.8rem;">
+								Carbone
+							</button>
+						</li>
+						<li class="nav-item">
+							<button class="nav-link active py-1 px-3" 
+									id="btn-elec" 
+									onclick="switchChart('elec')" 
+									type="button" 
+									style="font-size: 0.8rem;">
+								Électricité
+							</button>
+						</li>
+					</ul>
 				</div>
 			</div>
-			<div style="height: 250px; background: #fafafa; margin-top: 20px; border: 1px solid #eee; padding: 10px;">
-				<canvas id="consumptionChart"></canvas>
+
+			<div class="position-relative mt-4 p-2 rounded-3 bg-white border border-light" style="height: 300px;">
+				{# Graphique Élec #}
+				<div id="container-elec" class="h-100 w-100">
+					<canvas id="consumptionChart"></canvas>
+				</div>
+				{# Graphique Carbone (caché par défaut) #}
+				<div id="container-carbon" class="h-100 w-100 d-none">
+					<canvas id="carbonChart"></canvas>
+				</div>
 			</div>
 		</section>
 
@@ -284,42 +324,81 @@
 			</div>
 		</section>
 
-		{# Coût et Consommation #}
-		<section class="card">
-			<h2 style="font-size: 1.4rem; margin: 0;" class="mb-3">Coût et consommation</h2>
-			<div class="mt-3">
-				<div class="mb-3">
-					<span class="d-block text-muted small text-uppercase lh-1">Coût estimé (Mois)</span>
-					<span class="h2 fw-bold text-success">
-						{% if consumption and consumption.estimatedPrice is not null %}
-							{{ consumption.estimatedPrice|number_format(2, ',', ' ') }}
-							€
-						{% else %}
-							0,00 €
-						{% endif %}
-					</span>
-				</div>
-				<div>
-					<span class="d-block text-muted small text-uppercase lh-1">Volume estimé</span>
-					<span class="h4 fw-bold">
-						{% if consumption and consumption.totalKwh is not null %}
-							{{ consumption.totalKwh|number_format(0, ',', ' ') }}
-							kWh
-						{% else %}
-							0 kWh
-						{% endif %}
-					</span>
+		{# Coût et Consommation - Version Dashboard #}
+		<section class="card border-0 shadow-sm rounded-4 overflow-hidden">
+			<div class="card-header bg-white border-0 py-3">
+				<div class="d-flex align-items-center">
+					<div class="p-2 bg-success bg-opacity-10 rounded-3 me-3">
+						<i class="bi bi-lightning-charge-fill text-success"></i>
+					</div>
+					<h2 class="h5 mb-0 fw-bold">Coût et consommation</h2>
 				</div>
 			</div>
 
-			{% if consumption %}
-				<div class="mt-2 border-top pt-2">
-					<small class="text-muted">
-						Dernier relevé :
-						{{ consumption.billingDate|date('d/m/Y') }}
-					</small>
+			<div class="card-body pt-0">
+				<div class="row g-4">
+					{# Bloc Prix #}
+					<div class="col-12">
+						<div class="p-3 rounded-4 bg-light">
+							<div class="d-flex justify-content-between align-items-center mb-2">
+								<span class="text-muted small text-uppercase fw-semibold">Coût estimé (Mois)</span>
+								<i class="bi bi-cash-stack text-success fs-4"></i>
+							</div>
+							<div class="d-flex align-items-baseline">
+								<span class="display-6 fw-bold text-dark">
+									{% if consumption and consumption.estimatedPrice is not null %}
+										{{ consumption.estimatedPrice|number_format(2, ',', ' ') }}
+									{% else %}
+										0,00
+									{% endif %}
+								</span>
+								<span class="h4 mb-0 ms-2 text-success">€</span>
+							</div>
+						</div>
+					</div>
+
+					{# Bloc Volume #}
+					<div class="col-12">
+						<div class="px-2">
+							<div class="d-flex justify-content-between align-items-center mb-1">
+								<span class="text-muted small text-uppercase fw-semibold">Volume estimé</span>
+								<span class="fw-bold text-primary">{{ consumption.totalKwh|default(0)|number_format(0, ',', ' ') }} kWh</span>
+							</div>
+							{# Barre de progression visuelle (optionnelle : max à 1000kWh pour l'exemple) #}
+							<div class="progress" style="height: 8px;">
+								{% set raw_percentage = (consumption.totalKwh|default(0) / 1000) * 100 %}
+								{% set percentage = min(raw_percentage, 100) %}
+								{% set percentage = max(percentage, 0) %}
+								<div class="progress" style="height: 8px;">
+									<div class="progress-bar bg-primary rounded-pill" 
+										role="progressbar" 
+										style="width: {{ percentage }}%" 
+										aria-valuenow="{{ percentage }}" 
+										aria-valuemin="0" 
+										aria-valuemax="100">
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
 				</div>
-			{% endif %}
+
+				{# Footer avec Date - Style "Impact Global" #}
+				{% if consumption %}
+					<div class="mt-4 pt-2 border-top d-flex justify-content-between align-items-center">
+						<small class="text-muted" style="font-size: 0.7rem;">
+							<i class="fas fa-history me-1"></i> 
+							{{ consumption.billingDate|date('d/m/Y') }}
+						</small>
+						
+						<a href="{{ path('app_calculator_consumption') }}" 
+						class="text-decoration-none small fw-bold text-success" 
+						style="font-size: 0.75rem;">
+							Mettre à jour <i class="fas fa-chevron-right ms-1"></i>
+						</a>
+					</div>
+				{% endif %}
+			</div>
 		</section>
 
 		{# Alertes #}
@@ -378,54 +457,89 @@
 <script>
 window.addEventListener('load', function () {
 
-    /* ========= GRAPHIQUE LINÉAIRE (Consommation) ========= */
+    /* ========= GRAPHIQUE LINÉAIRE (Consommation Élec) ========= */
     const lineCtx = document.getElementById('consumptionChart');
     if (lineCtx) {
         try {
-            // Nettoyage au cas où un graphique existe déjà
             const existingChart = Chart.getChart(lineCtx);
             if (existingChart) existingChart.destroy();
 
             new Chart(lineCtx, {
-				type: 'line',
-				data: {
-					labels: {{ labelsMois|raw }},
-					datasets: [{
-						label: 'Consommation (kWh)',
-						data: {{ dataMois|raw }},
-						borderColor: '#1a3020',
-						backgroundColor: 'rgba(26, 48, 32, 0.1)',
-						fill: true,
-						tension: 0.4,
-						pointRadius: 4
-					}]
-				},
-				options: {
-					responsive: true,
-					maintainAspectRatio: false,
-					plugins: {
-						legend: { display: false }
-					},
-					scales: {
-						y: { beginAtZero: true },
-						x: { grid: { display: false } }
-					}
-				}
-			});
-            console.log("✅ Graphique linéaire chargé");
-        } catch (e) {
-            console.error("❌ Erreur Linéaire:", e);
-        }
+                type: 'line',
+                data: {
+                    labels: {{ labelsMois|raw }},
+                    datasets: [{
+                        label: 'Consommation (kWh)',
+                        data: {{ dataMois|raw }},
+                        borderColor: '#1a3020',
+                        backgroundColor: 'rgba(26, 48, 32, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        } catch (e) { console.error("❌ Erreur Linéaire:", e); }
     }
 
-    /* ========= GRAPHIQUE DONUT (Impact) ========= */
+    /* ========= GRAPHIQUE LINÉAIRE (Évolution Carbone Total) ========= */
+    const carbonCtx = document.getElementById('carbonChart');
+    if (carbonCtx) {
+        try {
+            new Chart(carbonCtx, {
+                type: 'line',
+                data: {
+                    labels: {{ labelsBilan|raw }}, 
+                    datasets: [{
+                        label: 'Empreinte Totale (kg CO2e)',
+                        data: {{ dataBilanTotal|raw }},
+                        borderColor: '#2ecc71',
+                        backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 5,
+                        pointBackgroundColor: '#27ae60'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.parsed.y + ' kg CO2e';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: { 
+                            beginAtZero: true, 
+                            title: { display: true, text: 'kg CO2e' } 
+                        },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        } catch (e) { console.error("❌ Erreur Évolution Carbone:", e); }
+    }
+
+    /* ========= GRAPHIQUE DONUT (Impact Global) ========= */
     const donutCtx = document.getElementById('impactChart');
     if (donutCtx) {
         {% if latest_bilan is defined and latest_bilan %}
         try {
-            const existingDonut = Chart.getChart(donutCtx);
-            if (existingDonut) existingDonut.destroy();
-
             new Chart(donutCtx, {
                 type: 'doughnut',
                 data: {
@@ -454,12 +568,37 @@ window.addEventListener('load', function () {
                     }
                 }
             });
-            console.log("✅ Graphique Donut chargé");
-        } catch (e) {
-            console.error("❌ Erreur Donut:", e);
-        }
+        } catch (e) { console.error("❌ Erreur Donut:", e); }
         {% endif %}
     }
 });
+
+function switchChart(type) {
+    const btnElec = document.getElementById('btn-elec');
+    const btnCarbon = document.getElementById('btn-carbon');
+    const containerElec = document.getElementById('container-elec');
+    const containerCarbon = document.getElementById('container-carbon');
+    const description = document.getElementById('chartDescription');
+
+    if (type === 'elec') {
+        containerElec.classList.remove('d-none');
+        containerCarbon.classList.add('d-none');
+        
+        // On gère uniquement la classe 'active'
+        btnElec.classList.add('active');
+        btnCarbon.classList.remove('active');
+        
+        description.innerText = "{{ infoMois }}";
+    } else {
+        containerElec.classList.add('d-none');
+        containerCarbon.classList.remove('d-none');
+        
+        // On gère uniquement la classe 'active'
+        btnCarbon.classList.add('active');
+        btnElec.classList.remove('active');
+        
+        description.innerText = "Évolution de votre empreinte carbone totale au fil de vos bilans";
+    }
+}
 </script>
 {% endblock %}

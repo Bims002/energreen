@@ -4,6 +4,7 @@ namespace App\Service;
 
 use App\Entity\BilanCarbone;
 use App\Entity\ArchiveBilanCarbone;
+use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 
 class BilanCarboneManager
@@ -15,28 +16,33 @@ class BilanCarboneManager
         $this->em = $em;
     }
 
-    public function archiveAndDeleteOldBilan(BilanCarbone $bilan): void
+    /**
+     * Cette méthode archive le bilan actuel puis le supprime pour libérer la place
+     */
+    public function archiveOldBilan(BilanCarbone $bilan): void
     {
         $user = $bilan->getUtilisateur();
-        $archive = new ArchiveBilanCarbone();
 
+        // 1. Créer l'ARCHIVE
+        $archive = new ArchiveBilanCarbone();
         $archive->setUser($user);
         $archive->setScoreTotal($bilan->getTotal() ?? 0.0);
+        $archive->setCreatedAt(new \DateTimeImmutable());
         $archive->setDetails([
-            'logement' => $bilan->getLogement() ?? 0.0,
-            'numerique' => $bilan->getNumerique() ?? 0.0,
-            'electromenager' => $bilan->getElectromenager() ?? 0.0,
-            'alimentation' => $bilan->getAlimentation() ?? 0.0,
-            'transports' => $bilan->getTransports() ?? 0.0,
-            'textile' => $bilan->getTextile() ?? 0.0,
+            'logement' => $bilan->getLogement(),
+            'numerique' => $bilan->getNumerique(),
+            'electromenager' => $bilan->getElectromenager(),
+            'alimentation' => $bilan->getAlimentation(),
+            'transports' => $bilan->getTransports(),
+            'textile' => $bilan->getTextile(),
         ]);
 
         $this->em->persist($archive);
 
-        // NE PAS FAIRE : $bilan->setUtilisateur(null); <--- C'est ça qui causait l'erreur
-        // FAIRE : On demande la suppression directe
+        // 2. Supprimer le bilan actuel (pour respecter l'unicité)
         $this->em->remove($bilan);
 
-        // On ne flushe pas ici, on laisse le contrôleur le faire
+        // 3. Valider la transaction
+        $this->em->flush();
     }
 }
