@@ -1,17 +1,15 @@
 <?php
 
 namespace App\Controller;
-
 use App\Entity\Contact;
 use App\Form\ContactType;
-use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 
 class ContactController extends AbstractController
 {
@@ -22,10 +20,13 @@ class ContactController extends AbstractController
         
         // Si l'utilisateur est connecté, on lie l'objet User au Contact
         if ($this->getUser()) {
+            $user = $this->getUser();
             $contact->setUser($this->getUser());
             $contact->setEmail($this->getUser()->getUserIdentifier()); // Ou ->getEmail()
+            $contact->setNom($contact->getNom());
         }
 
+    
         $form = $this->createForm(ContactType::class, $contact);
         $form->handleRequest($request);
 
@@ -41,15 +42,16 @@ class ContactController extends AbstractController
             $userLabel = $contact->getUser() ? 'Utilisateur Connecté' : 'Visiteur Anonyme';
             
             $email = (new Email())
-                ->from('adjaratoudia607@mail.com')
+                ->from($contact->getNom())
                 ->replyTo($contact->getEmail())
-                ->to('adjaratoudia607@gmail.com') // L'adresse qui reçoit les notifications
+                ->to('energreencollab@gmail.com') // L'adresse qui reçoit les notifications
                 ->subject('Energreen : Nouveau message de ' . $contact->getNom())
                 ->text(sprintf(
                     "Expéditeur: %s\nEmail: %s\nStatut: %s\n\nMessage:\n%s",
                     $contact->getNom(),
                     $contact->getEmail(),
                     $userLabel,
+                    $contact->getSubject(),
                     $contact->getMessage() // C'est ici qu'on récupère le message
                 ));
 

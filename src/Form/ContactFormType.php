@@ -3,6 +3,7 @@
 namespace App\Form;
 
 use App\Entity\Contact;
+use PixelOpen\CloudflareTurnstileBundle\Type\TurnstileType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -21,7 +22,15 @@ class ContactType extends AbstractType
             ])
             ->add('subject')
             ->add('message', TextareaType::class) // Textarea pour un long message
-         
+            
+            ->add('security', TurnstileType::class, [
+                'attr' => [
+                    'data-action' => 'contact',
+                    'data-theme' => 'light',
+                ],
+                'mapped' => false,
+                'label' => false,
+            ])    
         ;
     }
 

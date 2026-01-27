@@ -75,10 +75,13 @@
             {{ form_widget(form.message, {'attr': {'class': 'form-control', 'placeholder': 'Votre message', 'rows': '4'}}) }}
         </div>
 
-        {{ form_start(form) }}
+        <div class="form-group" style="margin-top: 20px; display: flex; justify-content: center;">
+             {{ form_row(form.security) }}
+        </div>
+        
             <button type="submit" class="btn-submit">Envoyer le message</button>
         {{ form_end(form) }}
-    {{ form_end(form) }}
+      
 
     <div class="footer-text">
         En envoyant ce message, vous acceptez notre <br>
