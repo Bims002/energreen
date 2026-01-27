@@ -1,0 +1,404 @@
+/* ========================================
+   CALCULATOR CONSUMPTION - UI MODERNE
+   ======================================== */
+
+/* Variables héritées du formulaire carbone */
+:root {
+    --primary-green: #126c06;
+    --primary-brown: #8B4513;
+    --accent-brown: #CD853F;
+    --soft-white: #ffffff;
+    --soft-gray: #f8f9fa;
+    --border-light: #e0e0e0;
+    --text-dark: #2c3e50;
+    --text-muted: #6c757d;
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.12);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.16);
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+    --transition-normal: 0.3s ease;
+}
+
+/* Container principal */
+.container {
+    font-size: 0.85rem;
+}
+
+/* Card principale */
+.card {
+    border-radius: var(--radius-xl) !important;
+    overflow: hidden;
+    animation: fadeIn 0.6s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Header avec dégradé marron */
+.bg-form {
+    background: linear-gradient(135deg, var(--primary-brown) 0%, var(--accent-brown) 100%) !important;
+    color: white;
+    padding: 1.5rem !important;
+}
+
+.bg-form h5 {
+    font-weight: 700;
+    font-size: 1.3rem;
+    margin: 0;
+}
+
+/* Card body */
+.card-body {
+    background: var(--soft-white);
+}
+
+/* Section résumé */
+.border-end {
+    border-right: 2px solid var(--border-light) !important;
+}
+
+.border-end h6 {
+    color: var(--primary-brown);
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Boxes d'information */
+.bg-light.p-2 {
+    background: rgba(139, 69, 19, 0.05) !important;
+    border-radius: var(--radius-md);
+    transition: all var(--transition-normal);
+}
+
+.bg-light.p-2:hover {
+    background: rgba(139, 69, 19, 0.1) !important;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+.border-warning {
+    border-color: var(--accent-brown) !important;
+    border-width: 2px !important;
+}
+
+.border-info {
+    border-color: var(--primary-brown) !important;
+    border-width: 2px !important;
+}
+
+/* Bouton info circulaire */
+.btn-info-circle {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    padding: 0;
+    line-height: 18px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-normal);
+}
+
+.btn-outline-warning.btn-info-circle {
+    border-color: var(--accent-brown);
+    color: var(--accent-brown);
+}
+
+.btn-outline-warning.btn-info-circle:hover {
+    background: var(--accent-brown);
+    color: white;
+    transform: scale(1.1);
+}
+
+.btn-outline-info.btn-info-circle {
+    border-color: var(--primary-brown);
+    color: var(--primary-brown);
+}
+
+.btn-outline-info.btn-info-circle:hover {
+    background: var(--primary-brown);
+    color: white;
+    transform: scale(1.1);
+}
+
+/* Bouton principal */
+.btn-soft {
+    background: linear-gradient(135deg, var(--primary-green) 0%, #1a8a0a 100%);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    padding: 0.75rem 1.5rem;
+    font-weight: 700;
+    font-size: 0.95rem;
+    box-shadow: var(--shadow-md);
+    transition: all var(--transition-normal);
+    width: 100%;
+}
+
+.btn-soft:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+    color: white;
+}
+
+.btn-soft i {
+    margin-right: 0.5rem;
+}
+
+/* Lignes d'appareils */
+.appliance-row {
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--border-light) !important;
+    transition: all var(--transition-normal);
+}
+
+.appliance-row:hover {
+    background: rgba(139, 69, 19, 0.02);
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    border-radius: var(--radius-md);
+}
+
+.appliance-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+/* Container de quantité */
+.qty-container {
+    display: flex;
+    align-items: center;
+    background: var(--soft-gray);
+    padding: 4px 10px;
+    border-radius: var(--radius-md);
+    border: 2px solid var(--border-light);
+    transition: all var(--transition-normal);
+}
+
+.qty-container:hover {
+    border-color: var(--primary-brown);
+    background: rgba(139, 69, 19, 0.05);
+}
+
+.qty-input {
+    width: 40px;
+    border: none;
+    background: transparent;
+    text-align: center;
+    font-weight: bold;
+    font-size: 0.85rem;
+    color: var(--text-dark);
+}
+
+.qty-input:focus {
+    outline: none;
+}
+
+/* Inputs du formulaire */
+.form-control-sm {
+    border: 2px solid var(--border-light);
+    border-radius: var(--radius-md);
+    padding: 0.5rem;
+    transition: all var(--transition-normal);
+    font-size: 0.85rem;
+}
+
+.form-control-sm:focus {
+    border-color: var(--primary-brown);
+    box-shadow: 0 0 0 3px rgba(139, 69, 19, 0.1);
+    transform: translateY(-1px);
+}
+
+.form-control-sm:hover {
+    border-color: var(--accent-brown);
+}
+
+/* Labels */
+label.text-muted {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted) !important;
+    margin-bottom: 0.25rem;
+}
+
+/* Résultats */
+.result-span {
+    font-size: 1rem;
+    font-weight: bold;
+    color: var(--primary-green) !important;
+}
+
+/* Box de total */
+.bg-dark {
+    background: linear-gradient(135deg, var(--primary-brown) 0%, var(--accent-brown) 100%) !important;
+    border-radius: var(--radius-lg) !important;
+    box-shadow: var(--shadow-lg);
+}
+
+.bg-dark .border-top {
+    border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.text-warning {
+    color: #FFD700 !important;
+}
+
+/* Boutons d'action */
+.btn-outline-light {
+    border: 2px solid white;
+    color: white;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    transition: all var(--transition-normal);
+}
+
+.btn-outline-light:hover {
+    background: white;
+    color: var(--primary-brown);
+    transform: translateY(-2px);
+}
+
+.btn-warning {
+    background: #FFD700;
+    border: none;
+    border-radius: var(--radius-md);
+    color: var(--text-dark);
+    font-weight: 700;
+    transition: all var(--transition-normal);
+}
+
+.btn-warning:hover {
+    background: #FFC700;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+/* Modales */
+.modal-content {
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    border: none;
+}
+
+.modal-header {
+    padding: 1.25rem;
+}
+
+.modal-header.bg-success {
+    background: linear-gradient(135deg, var(--primary-green) 0%, #1a8a0a 100%) !important;
+}
+
+.modal-header.bg-warning {
+    background: linear-gradient(135deg, #FFD700 0%, #FFC700 100%) !important;
+}
+
+.modal-header.bg-info {
+    background: linear-gradient(135deg, var(--primary-brown) 0%, var(--accent-brown) 100%) !important;
+}
+
+.modal-title {
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+/* Liste d'appareils dans la modale */
+.list-group-item {
+    border-left: none !important;
+    border-right: none !important;
+    padding: 1rem !important;
+    transition: all var(--transition-normal);
+}
+
+.list-group-item:hover {
+    background: rgba(139, 69, 19, 0.05) !important;
+    padding-left: 1.5rem !important;
+}
+
+.list-group-item:first-child {
+    border-top: none !important;
+}
+
+.list-group-item:last-child {
+    border-bottom: none !important;
+}
+
+/* Switch toggle */
+.form-check-input {
+    width: 2.5rem;
+    height: 1.25rem;
+    cursor: pointer;
+    border: 2px solid var(--border-light);
+    transition: all var(--transition-normal);
+}
+
+.form-check-input:checked {
+    background-color: var(--primary-green);
+    border-color: var(--primary-green);
+}
+
+.form-check-input:focus {
+    box-shadow: 0 0 0 3px rgba(18, 108, 6, 0.2);
+}
+
+/* Alertes */
+.alert-info {
+    background: rgba(139, 69, 19, 0.1);
+    border: 2px solid var(--accent-brown);
+    border-radius: var(--radius-md);
+    color: var(--text-dark);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .border-end {
+        border-right: none !important;
+        border-bottom: 2px solid var(--border-light) !important;
+        padding-bottom: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .bg-form h5 {
+        font-size: 1.1rem;
+    }
+    
+    .appliance-name {
+        font-size: 0.85rem;
+    }
+}
+
+/* Animations supplémentaires */
+.appliance-row {
+    animation: slideIn 0.4s ease;
+    animation-fill-mode: both;
+}
+
+.appliance-row:nth-child(1) { animation-delay: 0.05s; }
+.appliance-row:nth-child(2) { animation-delay: 0.1s; }
+.appliance-row:nth-child(3) { animation-delay: 0.15s; }
+.appliance-row:nth-child(4) { animation-delay: 0.2s; }
+.appliance-row:nth-child(5) { animation-delay: 0.25s; }
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
