@@ -56,30 +56,50 @@ class BilanCarboneCalculatorService implements BilanCarboneCalculatorServiceInte
             ((int) ($data['qty_cafe'] ?? 0) * 40)
         ) * (float) ($data['electro_duree_vie'] ?? 1);
 
-        $conso_elec_moyenne = 150;
+        $hasElectro = (
+            (int) ($data['qty_refri'] ?? 0) + (int) ($data['qty_lave_linge'] ?? 0) // etc...
+        ) > 0;
+
+        $conso_elec_moyenne = $hasElectro ? 150 : 0;
         $scoreElectroTotal = $fabrication_electro + $conso_elec_moyenne + (float) ($data['recharge_gaz'] ?? 0);
 
         // DIVISION PAR OCCUPANT
         $scoreElectro = $scoreElectroTotal / $nbOccupants;
 
         // --- 4. ALIMENTATION (Correction Erreur x52) ---
-        $baseAlim = (float) ($data['regime_alimentaire'] ?? 2100);
+        $baseAlim = isset($data['regime_alimentaire']) && $data['regime_alimentaire'] != "0"
+            ? (float) $data['regime_alimentaire']
+            : 0;
         $scoreAlim = $baseAlim * (float) ($data['coeff_saison'] ?? 1) * (float) ($data['coeff_bio'] ?? 1) * (float) ($data['coeff_avion'] ?? 1);
 
         $scoreAlim += (float) ($data['frequence_viande_rouge'] ?? 0);
         $scoreAlim += (float) ($data['frequence_viande_blanche'] ?? 0);
         $scoreAlim += (float) ($data['laitiers'] ?? 0);
 
-        // --- 5. TRANSPORTS (Cohérence Annuelle) ---
-        $scoreTransports = (float) ($data['km_voiture'] ?? 0) * (float) ($data['vehicule_moteur'] ?? 0.2) * (float) ($data['vehicule_taille'] ?? 1) * (float) ($data['covoiturage'] ?? 1);
+        // --- 5. TRANSPORTS (Cohérence Annuelle en kg CO2) ---
+        $scoreTransports = 0;
+
+        $kmVoiture = (float) ($data['km_voiture'] ?? 0);
+        $coeffMoteur = (float) ($data['vehicule_moteur'] ?? 0);
+
+        if ($coeffMoteur > 0 && $kmVoiture > 0) {
+            $tailleVehicule = (float) ($data['vehicule_taille'] ?? 1);
+            $covoiturage = (float) ($data['covoiturage'] ?? 1);
+
+            $scoreTransports += ($kmVoiture * $coeffMoteur * $tailleVehicule * $covoiturage);
+        }
 
         $scoreTransports += ((float) ($data['km_train'] ?? 0) * 12 * 0.003);
-        $scoreTransports += ((float) ($data['trajets_bus'] ?? 0) * 52 * 0.1);
 
-        $scoreTransports += ((int) ($data['vol_court'] ?? 0) * 300);
-        $scoreTransports += ((int) ($data['vol_moyen'] ?? 0) * 800);
-        $scoreTransports += ((int) ($data['vol_long'] ?? 0) * 2000);
-        $scoreTransports += (float) ($data['mobilite_douce'] ?? 0) * 2000;
+        $scoreTransports += ((float) ($data['trajets_bus'] ?? 0) * 52 * 5 * 0.1);
+
+        $scoreTransports += ((int) ($data['vol_court'] ?? 0) * 250);
+        $scoreTransports += ((int) ($data['vol_moyen'] ?? 0) * 850);
+        $scoreTransports += ((int) ($data['vol_long'] ?? 0) * 2200);
+
+        if (($data['mobilite_douce'] ?? '') === "0.450") {
+            $scoreTransports += (1500 * 0.250);
+        }
 
         // --- 6. TEXTILE ---
         $scoreTextile = (

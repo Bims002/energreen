@@ -155,13 +155,13 @@ h5,
 
 
 .accordion-button {
-    background-color: #493315 !important;
+    background-color: #126c06 !important;
     color: #ffffff !important;
-    border-color: #493315 !important;
+    border-color: #126c06 !important;
 }
 
 .accordion-button:not(.collapsed) {
-    background-color: #493315 !important;
+    background-color: #126c06 !important;
     color: #ffffff !important;
 }
 
@@ -171,25 +171,25 @@ h5,
 }
 
 .accordion-body {
-    border-color: #1a361c !important;
+    border-color: #126c06 !important;
 }
 
 .accordion-body label,
 .accordion-body .form-label,
 .accordion-body .fw-semibold {
-    color: #1a361c;
+    color: #126c06;
 }
 
 
 .btn-soft {
-    background-color: #1c4915ff !important;
+    background-color: #126c06 !important;
     color: #ffffff !important;
-    border-color: #1c4915ff !important;
+    border-color: #126c06 !important;
 }
 
 .btn-soft:hover {
-    background-color: #238932ff !important;
-    border-color: #238932ff !important;
+    background-color: #126c06 !important;
+    border-color: #126c06 !important;
     color: #ffffff !important;
 }
 
@@ -203,7 +203,7 @@ h5,
 
 .soft-chart h2,
 .soft-chart strong {
-    color: #1a361c;
+    color: #126c06;
 }
 
 
@@ -216,7 +216,7 @@ h5,
     font-size: 1.8rem;
     font-weight: 700;
     margin-bottom: 1rem;
-    color: #1a361c;
+    color: #126c06;
 }
 
 
