@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 use App\Entity\Contact;
+use Symfony\Component\Mime\Address;
+use App\Entity\User;
 use App\Form\ContactType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -18,14 +20,17 @@ class ContactController extends AbstractController
     {
         $contact = new Contact();
         
-        // Si l'utilisateur est connecté, on lie l'objet User au Contact
         if ($this->getUser()) {
+            /** @var User $user */
             $user = $this->getUser();
-            $contact->setUser($this->getUser());
-            $contact->setEmail($this->getUser()->getUserIdentifier()); // Ou ->getEmail()
-            $contact->setNom($contact->getNom());
+            $contact->setUser($user);
+            $contact->setEmail($user->getUserIdentifier()); 
+            $contact->setNom($user->getNom()); 
         }
 
+        $form = $this->createForm(ContactType::class, $contact, [
+            'is_logged_in' => !!$this->getUser(), // !! transforme l'objet user en true, ou null en false
+        ]);
     
         $form = $this->createForm(ContactType::class, $contact);
         $form->handleRequest($request);
@@ -42,7 +47,7 @@ class ContactController extends AbstractController
             $userLabel = $contact->getUser() ? 'Utilisateur Connecté' : 'Visiteur Anonyme';
             
             $email = (new Email())
-                ->from($contact->getNom())
+                ->from(new Address ('noreply@energreen.com', $contact->getNom()))
                 ->replyTo($contact->getEmail())
                 ->to('energreencollab@gmail.com') // L'adresse qui reçoit les notifications
                 ->subject('Energreen : Nouveau message de ' . $contact->getNom())

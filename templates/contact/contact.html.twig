@@ -54,6 +54,13 @@
         <div class="alert alert-success">{{ message }}</div>
     {% endfor %}
 
+    {# Affichage du message d'ERREUR (si l'envoi échoue) #}
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger" style="background-color: #f8d7da; color: #721c24; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+            {{ message }}
+        </div>
+    {% endfor %}
+
     {{ form_start(form) }}
         <div class="form-group">
             <label>Votre nom</label>
@@ -62,7 +69,7 @@
 
         <div class="form-group">
             <label>Votre e-mail</label>
-            {{ form_widget(form.email, {'attr': {'class': 'form-control', 'placeholder': 'Votre e-mail'}}) }}
+            {{ form_widget(form.email, {'attr': {'class': 'form-control'}}) }}
         </div>
 
         <div class="form-group">
@@ -113,4 +120,11 @@
         </div>
     </div>
 </div>
+<script>
+    setTimeout(() => {
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(alert => alert.style.display = 'none');
+    }, 5000); // Disparaît après 5 secondes
+</script>
 {% endblock %}
+

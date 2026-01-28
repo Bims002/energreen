@@ -1,27 +1,15 @@
 framework:
     messenger:
-        failure_transport: failed
+        # On supprime ou on commente la ligne failure_transport
+        # failure_transport: failed
 
         transports:
-            # https://symfony.com/doc/current/messenger.html#transport-configuration
-            async:
+            async: 
                 dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
                 options:
-                    use_notify: true
-                    check_delayed_interval: 60000
-                retry_strategy:
-                    max_retries: 3
-                    multiplier: 2
-            failed: 'doctrine://default?queue_name=failed'
-            # sync: 'sync://'
-
-        default_bus: messenger.bus.default
-
-        buses:
-            messenger.bus.default: []
+                    # On force la compatibilité avec votre MariaDB
+                    use_skip_locked: false 
 
         routing:
-            Symfony\Component\Mailer\Messenger\SendEmailMessage: async
-
-            # Route your messages to the transports
-            # 'App\Message\YourMessage': async
+            # On envoie les emails via le transport "async" (qui est maintenant sync)
+            'Symfony\Component\Mailer\Messenger\SendEmailMessage': async
