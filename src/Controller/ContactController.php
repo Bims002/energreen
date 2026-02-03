@@ -19,35 +19,35 @@ class ContactController extends AbstractController
     public function index(Request $request, MailerInterface $mailer, EntityManagerInterface $em): Response
     {
         $contact = new Contact();
-        
+
         if ($this->getUser()) {
             /** @var User $user */
             $user = $this->getUser();
             $contact->setUser($user);
-            $contact->setEmail($user->getUserIdentifier()); 
-            $contact->setNom($user->getNom()); 
+            $contact->setEmail($user->getUserIdentifier());
+            $contact->setNom($user->getNom());
         }
 
         $form = $this->createForm(ContactType::class, $contact, [
             'is_logged_in' => !!$this->getUser(), // !! transforme l'objet user en true, ou null en false
         ]);
-    
+
         $form = $this->createForm(ContactType::class, $contact);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $contact->setCreatedAt(new \DateTimeImmutable());
 
-            
+
             // On sauvegarde en base de données
             $em->persist($contact);
             $em->flush();
 
             // Préparation de l'email
-            $userLabel = $contact->getUser() ? 'Utilisateur Connecté' : 'Visiteur Anonyme';
-            
+            $userLabel = $contact->getUser() ? 'User ID: ' . $contact->getUser()->getId() : 'Visiteur Anonyme';
+
             $email = (new Email())
-                ->from(new Address ('noreply@energreen.com', $contact->getNom()))
+                ->from(new Address('noreply@energreen.com', $contact->getNom()))
                 ->replyTo($contact->getEmail())
                 ->to('energreencollab@gmail.com') // L'adresse qui reçoit les notifications
                 ->subject('Energreen : Nouveau message de ' . $contact->getNom())
