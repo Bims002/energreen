@@ -7,11 +7,11 @@ use PixelOpen\CloudflareTurnstileBundle\Type\TurnstileType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Form\Extension\Core\Type\DateTimeType; 
+use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 
-class ContactType extends AbstractType
+class ContactFormType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
@@ -22,7 +22,7 @@ class ContactType extends AbstractType
             ->add('email', null, [
                 'attr' => [
                     'placeholder' => 'Votre e-mail',
-                    'readonly' => $isLoggedIn, 
+                    'readonly' => $isLoggedIn,
                 ],
             ])
             ->add('nom', TextType::class, [
@@ -30,7 +30,7 @@ class ContactType extends AbstractType
                 'attr' => [
                     'placeholder' => 'Votre nom',
                     // On peut aussi bloquer le nom si l'utilisateur est connecté
-                    'readonly' => $isLoggedIn, 
+                    'readonly' => $isLoggedIn,
                 ],
             ])
             ->add('subject')
@@ -49,7 +49,7 @@ class ContactType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Contact::class,
-            'is_logged_in' => false, 
+            'is_logged_in' => false,
         ]);
     }
 }

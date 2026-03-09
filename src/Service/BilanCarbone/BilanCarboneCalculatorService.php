@@ -10,21 +10,21 @@ class BilanCarboneCalculatorService implements BilanCarboneCalculatorServiceInte
     {
         // RÉCUPÉRATION DU NOMBRE D'HABITANTS
         $nbOccupants = (int) ($data['occupant'] ?? 1);
-        if ($nbOccupants < 1)
+        if ($nbOccupants < 1) {
             $nbOccupants = 1;
+        }
 
         // Récupération des données
         $surface = (float) ($data['surface'] ?? 0);
         $isolation = (float) ($data['isolation_etat'] ?? 1);
         $facteurEnergie = (float) ($data['energie_principale'] ?? 0.052);
-        $occupants = (int) ($data['occupant'] ?? 1);
 
         // Calcul du chauffage
         $consoKwhBase = $surface * 110;
         $emissionsChauffage = ($consoKwhBase * $isolation * $facteurEnergie);
 
         // On divise le chauffage par le nombre d'occupants
-        $scoreLogementTotal = $emissionsChauffage / $occupants;
+        $scoreLogementTotal = $emissionsChauffage / $nbOccupants;
 
         // On ajoute les autres postes
         $scoreLogementTotal += (float) ($data['eau_chaude'] ?? 0);
