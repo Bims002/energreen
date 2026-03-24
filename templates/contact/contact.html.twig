@@ -1,0 +1,130 @@
+{# templates/contact/contact.html.twig #}
+{% extends 'base.html.twig' %}
+
+
+{% block body %}
+<style>
+    .contact-container {
+        max-width: 500px;
+        margin: 50px auto;
+        padding: 40px;
+        background: #fff;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        font-family: 'Arial', sans-serif;
+        text-align: center;
+    }
+
+    .contact-container h1 { color: #064523; margin-bottom: 10px; }
+    .contact-container p { color: #6bb16b; margin-bottom: 30px; font-weight: bold; }
+
+    .form-group { margin-bottom: 20px; text-align: left; }
+    .form-group label { display: block; margin-bottom: 5px; color: #333; font-weight: bold; }
+
+    .form-control {
+        width: 100%;
+        padding: 15px;
+        border: 2px solid #6bb16b;
+        border-radius: 15px;
+        background-color: #f0f7ff;
+        box-sizing: border-box;
+        font-size: 16px;
+    }
+
+    .btn-submit {
+        width: 100%;
+        padding: 15px;
+        background-color: #387d38;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 18px;
+        font-weight: bold;
+        cursor: pointer;
+        margin-top: 20px;
+    }
+
+    .btn-submit:hover { background-color: #2d632d; }
+    .footer-text { margin-top: 20px; font-size: 12px; color: #666; }
+</style>
+<div class="contact-container">
+    <h1>Contactez-nous</h1>
+    <p>Nous sommes à votre écoute pour un avenir meilleur</p>
+     {% for message in app.flashes('success') %}
+        <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+
+    {# Affichage du message d'ERREUR (si l'envoi échoue) #}
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger" style="background-color: #f8d7da; color: #721c24; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+            {{ message }}
+        </div>
+    {% endfor %}
+
+    {{ form_start(form) }}
+        <div class="form-group">
+            <label>Votre nom</label>
+            {{ form_widget(form.nom, {'attr': {'class': 'form-control', 'placeholder': 'Votre nom'}}) }}
+        </div>
+
+        <div class="form-group">
+            <label>Votre e-mail</label>
+            {{ form_widget(form.email, {'attr': {'class': 'form-control'}}) }}
+        </div>
+
+        <div class="form-group">
+            <label>Sujet</label>
+            {{ form_widget(form.subject, {'attr': {'class': 'form-control', 'placeholder': 'Sujet'}}) }}
+        </div>
+
+        <div class="form-group">
+            <label>Votre message</label>
+            {{ form_widget(form.message, {'attr': {'class': 'form-control', 'placeholder': 'Votre message', 'rows': '4'}}) }}
+        </div>
+
+        <div class="form-group" style="margin-top: 20px; display: flex; justify-content: center;">
+             {{ form_row(form.security) }}
+        </div>
+        
+            <button type="submit" class="btn-submit">Envoyer le message</button>
+        {{ form_end(form) }}
+      
+
+    <div class="footer-text">
+        En envoyant ce message, vous acceptez notre <br>
+        <a href="#" style="color: #387d38;" data-bs-toggle="modal" data-bs-target="#modalConditions">
+            politique de confidentialité
+        </a>.
+    </div>
+    <div class="modal fade" id="modalConditions" tabindex="-1" aria-labelledby="modalConditionsLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content" style="border-radius: 20px; border: none;">
+                <div class="modal-header" style="border-bottom: 1px solid #f0f7ff;">
+                    <h5 class="modal-title fw-bold" id="modalConditionsLabel" style="color: #064523;">Politique de confidentialité</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4 text-start" style="font-size: 0.9rem; color: #444;">
+                    <h6 class="fw-bold">1. Collecte des données</h6>
+                    <p>Les informations recueillies via ce formulaire (nom, e-mail, sujet, message) sont nécessaires pour traiter votre demande de contact.</p>
+                    
+                    <h6 class="fw-bold">2. Utilisation des données</h6>
+                    <p>Ces données sont utilisées exclusivement par Energreen pour répondre à vos questions. Elles ne seront jamais cédées ou vendues à des tiers.</p>
+                    
+                    <h6 class="fw-bold">3. Conservation</h6>
+                    <p>Vos données sont conservées pendant la durée nécessaire au traitement de votre demande, puis supprimées conformément à la réglementation RGPD.</p>
+                </div>
+                <div class="modal-footer" style="border-top: none;">
+                    <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal" style="background: #6bb16b; border: none;">J'ai compris</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    setTimeout(() => {
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(alert => alert.style.display = 'none');
+    }, 5000); // Disparaît après 5 secondes
+</script>
+{% endblock %}
+

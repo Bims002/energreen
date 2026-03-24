@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
@@ -23,15 +25,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 180)]
     private ?string $email = null;
 
-    /**
-     * @var list<string> Les rôles de l'utilisateur
-     */
     #[ORM\Column(type: Types::JSON)]
     private array $roles = [];
 
-    /**
-     * @var string Le mot de passe haché
-     */
     #[ORM\Column(length: 255)]
     private ?string $password = null;
 
@@ -47,9 +43,29 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $created_at = null;
 
+    #[ORM\OneToOne(mappedBy: 'user', cascade: ['persist', 'remove'])]
+    private ?Lodgment $lodgment = null;
+
+    #[ORM\OneToMany(mappedBy: 'utilisateur', targetEntity: BilanCarbone::class, cascade: ['all'], orphanRemoval: true)]
+    private Collection $bilansCarbone;
+
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Consumption::class, cascade: ['remove'])]
+    private Collection $consumptions;
+
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: ArchiveBilanCarbone::class, cascade: ['remove'])]
+    private Collection $archiveBilanCarbones;
+
+    // AJOUT INDISPENSABLE : Relation pour débloquer la suppression
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: ArchiveConsumption::class, cascade: ['remove'])]
+    private Collection $archiveConsumptions;
+
     public function __construct()
     {
         $this->created_at = new \DateTime();
+        $this->bilansCarbone = new ArrayCollection();
+        $this->consumptions = new ArrayCollection();
+        $this->archiveBilanCarbones = new ArrayCollection();
+        $this->archiveConsumptions = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -61,7 +77,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         return $this->email;
     }
-
     public function setEmail(string $email): static
     {
         $this->email = $email;
@@ -79,7 +94,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $roles[] = 'ROLE_USER';
         return array_unique($roles);
     }
-
     public function setRoles(array $roles): static
     {
         $this->roles = $roles;
@@ -90,7 +104,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         return $this->password;
     }
-
     public function setPassword(string $password): static
     {
         $this->password = $password;
@@ -99,14 +112,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function eraseCredentials(): void
     {
-        // Nettoyage des données sensibles temporaires si nécessaire
     }
 
     public function getNom(): ?string
     {
         return $this->nom;
     }
-
     public function setNom(string $nom): static
     {
         $this->nom = $nom;
@@ -117,7 +128,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         return $this->statut_pro;
     }
-
     public function setStatutPro(string $statut_pro): static
     {
         $this->statut_pro = $statut_pro;
@@ -128,7 +138,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         return $this->prenom;
     }
-
     public function setPrenom(?string $prenom): static
     {
         $this->prenom = $prenom;
@@ -139,10 +148,109 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         return $this->created_at;
     }
-
     public function setCreatedAt(\DateTimeInterface $created_at): static
     {
         $this->created_at = $created_at;
         return $this;
+    }
+
+    public function getLodgment(): ?Lodgment
+    {
+        return $this->lodgment;
+    }
+    public function setLodgment(?Lodgment $lodgment): static
+    {
+        if ($lodgment !== null && $lodgment->getUser() !== $this) {
+            $lodgment->setUser($this);
+        }
+        $this->lodgment = $lodgment;
+        return $this;
+    }
+
+    /** @return Collection<int, BilanCarbone> */
+    public function getBilansCarbone(): Collection
+    {
+        return $this->bilansCarbone;
+    }
+
+    public function getBilanCarbone(): ?BilanCarbone
+    {
+        return $this->bilansCarbone->last() ?: null;
+    }
+
+    public function setBilanCarbone(?BilanCarbone $bilanCarbone): static
+    {
+        foreach ($this->bilansCarbone as $oldBilan) {
+            $this->removeBilanCarbone($oldBilan);
+        }
+        if ($bilanCarbone !== null) {
+            $this->addBilanCarbone($bilanCarbone);
+        }
+        return $this;
+    }
+
+    public function addBilanCarbone(BilanCarbone $bilanCarbone): static
+    {
+        if (!$this->bilansCarbone->contains($bilanCarbone)) {
+            $this->bilansCarbone->add($bilanCarbone);
+            $bilanCarbone->setUtilisateur($this);
+        }
+        return $this;
+    }
+
+    public function removeBilanCarbone(BilanCarbone $bilanCarbone): static
+    {
+        if ($this->bilansCarbone->removeElement($bilanCarbone)) {
+            if ($bilanCarbone->getUtilisateur() === $this) {
+                $bilanCarbone->setUtilisateur(null);
+            }
+        }
+        return $this;
+    }
+
+    /** @return Collection<int, Consumption> */
+    public function getConsumptions(): Collection
+    {
+        return $this->consumptions;
+    }
+
+    public function addConsumption(Consumption $consumption): static
+    {
+        if (!$this->consumptions->contains($consumption)) {
+            $this->consumptions->add($consumption);
+            $consumption->setUser($this);
+        }
+        return $this;
+    }
+
+    public function removeConsumption(Consumption $consumption): static
+    {
+        if ($this->consumptions->removeElement($consumption)) {
+            if ($consumption->getUser() === $this) {
+                $consumption->setUser(null);
+            }
+        }
+        return $this;
+    }
+
+    /** @return Collection<int, ArchiveBilanCarbone> */
+    public function getArchiveBilanCarbones(): Collection
+    {
+        return $this->archiveBilanCarbones;
+    }
+
+    /** @return Collection<int, ArchiveConsumption> */
+    public function getArchiveConsumptions(): Collection
+    {
+        return $this->archiveConsumptions;
+    }
+
+    public function addBilansCarbone(BilanCarbone $bilansCarbone): static
+    {
+        return $this->addBilanCarbone($bilansCarbone);
+    }
+    public function removeBilansCarbone(BilanCarbone $bilansCarbone): static
+    {
+        return $this->removeBilanCarbone($bilansCarbone);
     }
 }

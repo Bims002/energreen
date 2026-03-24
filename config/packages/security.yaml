@@ -5,7 +5,7 @@ security:
 
     # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
     providers:
-        # ✅ Provider qui utilise la base de données
+        # Provider pour charger les utilisateurs depuis la base de données
         app_user_provider:
             entity:
                 class: App\Entity\User
@@ -13,36 +13,32 @@ security:
 
     firewalls:
         dev:
-            # Ensure dev tools and static assets are always allowed
-            pattern: ^/(_profiler|_wdt|assets|build)/
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
         main:
             lazy: true
-            provider: app_user_provider  # ✅ Utiliser le provider de la base de données
-            
-            # ✅ Configuration du formulaire de login
-            form_login:
-                login_path: app_login              # Route vers la page de login
-                check_path: app_login              # Route qui vérifie les identifiants
-                enable_csrf: true                  # Protection CSRF activée
-                default_target_path: app_dashboard # Redirection après login réussi
-                
-            # ✅ Configuration de la déconnexion
+            provider: app_user_provider
+            login_throttling:
+                max_attempts: 3
+                interval: '15 minutes'
+            custom_authenticators:
+                - App\Security\AppAuthenticator
             logout:
-                path: app_logout                   # Route pour se déconnecter
-                target: app_home                   # Redirection après logout
+                path: app_logout
+                target: app_home
 
             # https://symfony.com/doc/current/security/impersonating_user.html
             # switch_user: true
 
-    # Note: Only the *first* matching rule is applied
+    # Easy way to control access for large sections of your site
+    # Note: Only the *first* access control that matches will be used
     access_control:
-        # Pages publiques (accessibles sans connexion)
+        # Routes publiques
         - { path: ^/login, roles: PUBLIC_ACCESS }
         - { path: ^/register, roles: PUBLIC_ACCESS }
         - { path: ^/$, roles: PUBLIC_ACCESS }
         
-        # Pages privées (nécessitent d'être connecté)
+        # Routes protégées - nécessitent d'être connecté
         - { path: ^/dashboard, roles: ROLE_USER }
         - { path: ^/profil, roles: ROLE_USER }
         - { path: ^/welcome, roles: ROLE_USER }
@@ -52,8 +48,10 @@ security:
 when@test:
     security:
         password_hashers:
-            # Password hashers are resource-intensive by design to ensure security.
-            # In tests, it's safe to reduce their cost to improve performance.
+            # By default, password hashers are resource intensive and take time. This is
+            # important to generate secure password hashes. In tests however, secure hashes
+            # are not important, waste resources and increase test times. The following
+            # reduces the work factor to the lowest possible values.
             Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface:
                 algorithm: auto
                 cost: 4 # Lowest possible value for bcrypt

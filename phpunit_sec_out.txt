@@ -1,0 +1,5 @@
+PHPUnit 10.5.63 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.3.14
+Configuration: E:\dev\energreen\phpunit.dist.xml
+

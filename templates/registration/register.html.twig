@@ -1,129 +1,169 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Inscription - ENERGREEN{% endblock %}
+{% block title %}Inscription - ENERGREEN
+{% endblock %}
 
 {% block body %}
 <style>
-    /* Design ENERGREEN pour l'inscription */
-    body {
-        background-color: #f0f4f1;
-        font-family: 'Segoe UI', sans-serif;
-    }
-    .register-container {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 90vh;
-        padding: 20px;
-    }
-    .register-card {
-        background: white;
-        padding: 30px;
-        border-radius: 12px;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-        width: 100%;
-        max-width: 500px;
-        border-top: 5px solid #2e7d32;
-    }
-    .welcome-title {
-        color: #2e7d32;
-        text-align: center;
-        font-weight: bold;
-        margin-bottom: 5px;
-    }
-    .subtitle {
-        text-align: center;
-        color: #666;
-        margin-bottom: 20px;
-        font-size: 0.9rem;
-    }
+	/* Design ENERGREEN pour l'inscription */
+	body {
+		background-color: #f0f4f1;
+		font-family: 'Segoe UI', sans-serif;
+	}
+	.register-container {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		min-height: 90vh;
+		padding: 20px;
+	}
+	.register-card {
+		background: white;
+		padding: 30px;
+		border-radius: 12px;
+		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+		width: 100%;
+		max-width: 500px;
+		border-top: 5px solid #2e7d32;
+	}
+	.welcome-title {
+		color: #2e7d32;
+		text-align: center;
+		font-weight: bold;
+		margin-bottom: 5px;
+	}
+	.subtitle {
+		text-align: center;
+		color: #666;
+		margin-bottom: 20px;
+		font-size: 0.9rem;
+	}
 
-    .form-group {
-        margin-bottom: 15px;
-    }
-    
-    input[type="email"],
-    input[type="text"],
-    select,
-    input[type="password"] {
-        width: 100%;
-        padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 6px;
-        box-sizing: border-box;
-    }
+	.form-group {
+		margin-bottom: 15px;
+		position: relative;
+	}
 
-    .btn-register {
-        width: 100%;
-        background-color: #2e7d32;
-        color: white;
-        border: none;
-        padding: 14px;
-        border-radius: 6px;
-        font-size: 1rem;
-        cursor: pointer;
-        transition: background 0.3s;
-        margin-top: 15px;
-        font-weight: bold;
-    }
-    .btn-register:hover {
-        background-color: #1b5e20;
-    }
-    .checkbox-group {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin-top: 10px;
-        font-size: 0.9rem;
-    }
+	input[type="email"],
+	input[type="text"],
+	select,
+	input[type="password"] {
+		width: 100%;
+		padding: 10px 45px 10px 10px;
+		border: 1px solid #ccc;
+		border-radius: 6px;
+		box-sizing: border-box;
+	}
+
+	.toggle-password {
+		position: absolute;
+		right: 12px;
+		top: 70%;
+		transform: translateY(-50%);
+		cursor: pointer;
+		color: #666;
+		font-size: 1.1rem;
+		user-select: none;
+		z-index: 10;
+	}
+
+	.toggle-password:hover {
+		color: #2e7d32;
+	}
+
+	.btn-register {
+		width: 100%;
+		background-color: #2e7d32;
+		color: white;
+		border: none;
+		padding: 14px;
+		border-radius: 6px;
+		font-size: 1rem;
+		cursor: pointer;
+		transition: background 0.3s;
+		margin-top: 15px;
+		font-weight: bold;
+	}
+	.btn-register:hover {
+		background-color: #1b5e20;
+	}
+	.checkbox-group {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		margin-top: 10px;
+		font-size: 0.9rem;
+	}
 </style>
 
 <div class="register-container">
-    <div class="register-card">
-        <h1 class="welcome-title">Inscription ENERGREEN</h1>
-        <p class="subtitle">Rejoignez-nous pour protéger la planète !</p>
+	<div class="register-card">
+		<h1 class="welcome-title">Inscription ENERGREEN</h1>
+		<p class="subtitle">Rejoignez-nous pour protéger la planète !</p>
 
-        {{ form_errors(registrationForm) }}
+		{{ form_errors(registrationForm) }}
 
-        {{ form_start(registrationForm) }}
-            <div class="form-group">
-                {{ form_row(registrationForm.email, {'attr': {'placeholder': 'votre@email.com'}}) }}
-            </div>
+		{{ form_start(registrationForm) }}
+		<div class="form-group">
+			{{ form_row(registrationForm.email, {'attr': {'placeholder': 'votre@email.com'}}) }}
+		</div>
 
-            {# --- CHAMPS NOM & PRENOM --- #}
-            <div style="display: flex; gap: 15px;">
-                <div class="form-group" style="flex: 1;">
-                    {{ form_row(registrationForm.nom, {'attr': {'placeholder': 'Nom'}}) }}
-                </div>
-                <div class="form-group" style="flex: 1;">
-                    {{ form_row(registrationForm.prenom, {'attr': {'placeholder': 'Prénom'}}) }}
-                </div>
-            </div>
+		{# --- CHAMPS NOM & PRENOM --- #}
+		<div style="display: flex; gap: 15px;">
+			<div class="form-group" style="flex: 1;">
+				{{ form_row(registrationForm.nom, {'attr': {'placeholder': 'Nom'}}) }}
+			</div>
+			<div class="form-group" style="flex: 1;">
+				{{ form_row(registrationForm.prenom, {'attr': {'placeholder': 'Prénom'}}) }}
+			</div>
+		</div>
 
-            {# --- CHAMP STATUT PRO --- #}
-            <div class="form-group">
-                {{ form_row(registrationForm.statut_pro) }}
-            </div>
+		{# --- CHAMP STATUT PRO --- #}
+		<div class="form-group">
+			{{ form_row(registrationForm.statut_pro) }}
+		</div>
 
-            <div class="form-group">
-                {{ form_row(registrationForm.plainPassword, {
-                    'label': 'Mot de passe',
+		<div class="form-group password-group">
+			{{ form_label(registrationForm.plainPassword.first, 'Mot de passe') }}
+			{{ form_widget(registrationForm.plainPassword.first, {
                     'attr': {
                         'placeholder': 'Minimum 6 caractères',
-                        'id': 'pass_input'
+                        'class': 'password-input'
                     }
                 }) }}
+			<span class="toggle-password" onclick="togglePasswordInGroup(this)">
+				<i class="fas fa-eye"></i>
+			</span>
+			{{ form_errors(registrationForm.plainPassword.first) }}
+		</div>
 
-                <div class="checkbox-group" style="margin-top: 5px;">
-                    <input type="checkbox" id="toggle_pass">
-                    <label for="toggle_pass" style="font-size: 0.8rem; display: inline; font-weight: normal;">Afficher le mot de passe</label>
-                </div>
-            </div>
+		<div class="form-group password-group">
+			{{ form_label(registrationForm.plainPassword.second, 'Confirmer le mot de passe') }}
+			{{ form_widget(registrationForm.plainPassword.second, {
+                    'attr': {
+                        'placeholder': 'Retapez votre mot de passe',
+                        'class': 'password-input'
+                    }
+                }) }}
+			<span class="toggle-password" onclick="togglePasswordInGroup(this)">
+				<i class="fas fa-eye"></i>
+			</span>
+			{{ form_errors(registrationForm.plainPassword.second) }}
+		</div>
 
-            <div class="checkbox-group">
-                {{ form_widget(registrationForm.agreeTerms) }}
-                {{ form_label(registrationForm.agreeTerms, 'Accepter les conditions d\'utilisation') }}
-            </div>
+		<div class="checkbox-group d-flex align-items-center gap-2">
+			{{ form_widget(registrationForm.agreeTerms) }}
+			<label for="{{ registrationForm.agreeTerms.vars.id }}">
+				Accepter les 
+				<a href="#" data-bs-toggle="modal" data-bs-target="#termsModal" style="color: var(--vert-energreen); font-weight: bold; text-decoration: underline;">
+					conditions d'utilisation
+				</a>
+			</label>
+		</div>
+
+		<div class="form-group" style="margin-top: 20px; display: flex; justify-content: center;">
+			{{ form_row(registrationForm.security) }}
+		</div>
 
             <button type="submit" class="btn-register">Créer mon compte</button>
         {{ form_end(registrationForm) }}
@@ -134,15 +174,56 @@
     </div>
 </div>
 
+<div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content" style="border-radius: 15px; border: none; overflow: hidden;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #1a361c 0%, #2e7d32 100%); color: white;">
+                <h5 class="modal-title" id="termsModalLabel">
+                    <i class="fas fa-file-contract me-2"></i> Conditions Générales d'Utilisation
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="max-height: 400px; overflow-y: auto; color: #333; line-height: 1.6;">
+                <h6><strong>1. Objet du service</strong></h6>
+                <p>EnerGreen fournit des outils d'analyse de consommation énergétique et de calcul d'empreinte carbone basés sur les données saisies par l'utilisateur.</p>
+
+                <h6><strong>2. Collecte des données</strong></h6>
+                <p>En utilisant EnerGreen, vous acceptez la collecte de données relatives à votre logement (surface, type d'énergie) et vos habitudes de consommation afin de générer vos bilans personnalisés.</p>
+
+                <h6><strong>3. Confidentialité</strong></h6>
+                <p>Vos données sont strictement personnelles et ne sont jamais revendues à des tiers. Elles servent uniquement à améliorer votre expérience et la précision de nos calculs.</p>
+
+                <h6><strong>4. Responsabilité</strong></h6>
+                <p>Les calculs sont des estimations basées sur des moyennes nationales. EnerGreen ne peut être tenu responsable des écarts constatés sur vos factures réelles.</p>
+                
+                <p class="text-muted small mt-4">Dernière mise à jour : Janvier 2026</p>
+            </div>
+            <div class="modal-footer" style="background: #f8f9fa;">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                <button type="button" class="btn-energreen" data-bs-dismiss="modal" style="padding: 8px 20px;">J'ai compris</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
-    document.getElementById('toggle_pass').addEventListener('change', function() {
-        const passwordInput = document.getElementById('pass_input') 
-                              || document.querySelector('input[name*="plainPassword"]')
-                              || document.querySelector('input[type="password"]');
-        
-        if (passwordInput) {
-            passwordInput.type = this.checked ? 'text' : 'password';
-        }
-    });
+function togglePasswordInGroup(iconElement) {
+    // Trouver le groupe parent
+    const group = iconElement.closest('.password-group');
+    if (!group) return;
+    
+    // Trouver l'input dans ce groupe
+    const passwordInput = group.querySelector('input[type="password"], input[type="text"]');
+    if (!passwordInput) return;
+    
+    // Toggle le type
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        iconElement.innerHTML = '<i class="fas fa-eye-slash"></i>';
+    } else {
+        passwordInput.type = 'password';
+        iconElement.innerHTML = '<i class="fas fa-eye"></i>';
+    }
+}
 </script>
 {% endblock %}
