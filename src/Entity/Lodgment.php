@@ -24,7 +24,7 @@ class Lodgment
     #[ORM\Column]
     private ?int $occupant = null;
 
-    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\OneToOne(inversedBy: 'lodgment', targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
 

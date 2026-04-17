@@ -3,7 +3,7 @@
 namespace App\Form;
 
 use App\Entity\User;
-use PixelOpen\CloudflareTurnstileBundle\Type\TurnstileType; // IMPORT À AJOUTER
+// use PixelOpen\CloudflareTurnstileBundle\Type\TurnstileType; // Temporairement désactivé - problème d'installation
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -61,14 +61,15 @@ class RegistrationFormType extends AbstractType
                 ],
             ])
             // --- AJOUT DU TURNSTILE ICI ---
-            ->add('security', TurnstileType::class, [
-                'attr' => [
-                    'data-action' => 'register',
-                    'data-theme' => 'light',
-                ],
-                'mapped' => false,
-                'label' => false,
-            ])
+            // Temporairement désactivé - problème d'installation du bundle
+            // ->add('security', TurnstileType::class, [
+            //     'attr' => [
+            //         'data-action' => 'register',
+            //         'data-theme' => 'light',
+            //     ],
+            //     'mapped' => false,
+            //     'label' => false,
+            // ])
             // ------------------------------
             ->add('plainPassword', RepeatedType::class, [
                 'type' => PasswordType::class,

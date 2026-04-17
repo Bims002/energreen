@@ -16,7 +16,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class ContactController extends AbstractController
 {
     #[Route('/contact', name: 'app_contact')]
-    public function index(Request $request, MailerInterface $mailer, EntityManagerInterface $em): Response
+    public function index(Request $request, EntityManagerInterface $em, MailerInterface $mailer = null): Response
     {
         $contact = new Contact();
         
@@ -37,25 +37,35 @@ class ContactController extends AbstractController
             $em->persist($contact);
             $em->flush();
 
-            // Préparation de l'email
-            $userLabel = $contact->getUser() ? 'Utilisateur Connecté' : 'Visiteur Anonyme';
+            // Préparation de l'email (seulement si le mailer est disponible)
+            if ($mailer) {
+                try {
+                    $userLabel = $contact->getUser() ? 'Utilisateur Connecté' : 'Visiteur Anonyme';
+                    
+                    $email = (new Email())
+                        ->from('adjaratoudia607@mail.com')
+                        ->replyTo($contact->getEmail())
+                        ->to('adjaratoudia607@gmail.com') // L'adresse qui reçoit les notifications
+                        ->subject('Energreen : Nouveau message de ' . $contact->getNom())
+                        ->text(sprintf(
+                            "Expéditeur: %s\nEmail: %s\nStatut: %s\n\nMessage:\n%s",
+                            $contact->getNom(),
+                            $contact->getEmail(),
+                            $userLabel,
+                            $contact->getMessage() // C'est ici qu'on récupère le message
+                        ));
+
+                    $mailer->send($email);
+                    $this->addFlash('success', 'Merci ! Votre message a été envoyé.');
+                } catch (\Exception $e) {
+                    // Si l'envoi d'email échoue, on sauvegarde quand même le message
+                    $this->addFlash('success', 'Merci ! Votre message a été enregistré.');
+                }
+            } else {
+                // Si le mailer n'est pas disponible, on sauvegarde quand même
+                $this->addFlash('success', 'Merci ! Votre message a été enregistré.');
+            }
             
-            $email = (new Email())
-                ->from('adjaratoudia607@mail.com')
-                ->replyTo($contact->getEmail())
-                ->to('adjaratoudia607@gmail.com') // L'adresse qui reçoit les notifications
-                ->subject('Energreen : Nouveau message de ' . $contact->getNom())
-                ->text(sprintf(
-                    "Expéditeur: %s\nEmail: %s\nStatut: %s\n\nMessage:\n%s",
-                    $contact->getNom(),
-                    $contact->getEmail(),
-                    $userLabel,
-                    $contact->getMessage() // C'est ici qu'on récupère le message
-                ));
-
-            $mailer->send($email);
-
-            $this->addFlash('success', 'Merci ! Votre message a été envoyé.');
             return $this->redirectToRoute('app_contact');
         }
 

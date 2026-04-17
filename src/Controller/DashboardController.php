@@ -56,8 +56,8 @@ class DashboardController extends AbstractController
         $chartData = $this->dashboardDataService->prepareMonthlyChartData($user);
 
         // 5. Calculs et variables de rendu
-        $kwh = $latestConsumption ? $latestConsumption->getTotalKwh() : 0;
-        $price = $latestConsumption ? $latestConsumption->getEstimatedPrice() : 0;
+        $kwh = ($latestConsumption && $latestConsumption->getTotalKwh() !== null) ? (float)$latestConsumption->getTotalKwh() : 0.0;
+        $price = ($latestConsumption && $latestConsumption->getEstimatedPrice() !== null) ? (float)$latestConsumption->getEstimatedPrice() : 0.0;
         $co2Emissions = $this->dashboardDataService->calculateCO2Emissions($kwh);
         $rating = $latestBilan ? $this->carbonService->calculateCarbonGrade($latestBilan->getTotal()) : ['label' => '?', 'color' => '#6c757d'];
 

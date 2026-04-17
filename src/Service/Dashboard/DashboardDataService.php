@@ -51,6 +51,10 @@ class DashboardDataService implements DashboardDataServiceInterface
     public function calculateCO2Emissions(float $kwh): float
     {
         // Facteur d'émission moyen en France : 0.367 kg CO2/kWh
-        return round($kwh * 0.367);
+        // Gérer le cas où $kwh est 0 ou null
+        if ($kwh <= 0) {
+            return 0.0;
+        }
+        return (float)round($kwh * 0.367, 2);
     }
 }
