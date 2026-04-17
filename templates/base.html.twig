@@ -125,6 +125,9 @@
 									<a class="nav-link {{ app.request.attributes.get('_route') == 'app_formulaire' ? 'active' : '' }}" href="{{ path('app_formulaire') }}">Empreinte carbone</a>
 								</li>
 							{% endif %}
+							<li class="nav-item">
+								<a class="nav-link {{ app.request.attributes.get('_route') == 'app_contact' ? 'active' : '' }}" href="{{ path('app_contact') }}">Contact</a>
+							</li>
 						</ul>
 						<ul class="navbar-nav ms-auto" style="padding-right: 15px;">
 							<li class="nav-item dropdown profile-dropdown">

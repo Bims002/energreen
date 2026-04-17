@@ -38,7 +38,7 @@ final class CalculatorConsumptionController extends AbstractController
                 );
 
                 $this->addFlash('success', 'Consommation mise à jour et archivée.');
-                return $this->redirectToRoute('app_dashboard');
+                return $this->redirectToRoute('app_calculator_consumption');
             }
         }
 

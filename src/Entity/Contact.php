@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Entity;
-
+use Symfony\Component\Validator\Constraints as Assert;
 use App\Repository\ContactRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -15,14 +15,19 @@ class Contact
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\Email(message: "L'email {{ value }} n'est pas valide")]
+    #[Assert\NotBlank]
     private ?string $email = null;
 
     // Ajout du nom car vous l'utilisez dans le formulaire
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le nom est obligatoire")]
     private ?string $nom = null;
 
     // Ajout de la propriété subject qui manquait
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank]
+    #[Assert\Length(min: 5, minMessage: "Le sujet doit faire au moins 5 caractères")]
     private ?string $subject = null;
 
     #[ORM\Column(type: Types::TEXT)]

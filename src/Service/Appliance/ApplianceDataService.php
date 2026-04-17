@@ -20,11 +20,14 @@ class ApplianceDataService implements ApplianceDataServiceInterface
             ->getRepository(Lodgment::class)
             ->findOneBy(['user' => $user], ['id' => 'DESC']);
 
-        $userAppliances = $lodgment ? $lodgment->getAppliances() : [];
-
+        $userAppliances = [];
+        if ($lodgment) {
+            $appliances = $lodgment->getAppliances();
+            $userAppliances = is_array($appliances) ? $appliances : $appliances->toArray();
+        }
         $userApplianceNames = array_map(
             fn($app) => $app->getName(),
-            $userAppliances->toArray()
+            $userAppliances
         );
 
         $allAppliances = $this->entityManager

@@ -10,20 +10,27 @@ class BilanCarboneCalculatorService implements BilanCarboneCalculatorServiceInte
     {
         // RÉCUPÉRATION DU NOMBRE D'HABITANTS
         $nbOccupants = (int) ($data['occupant'] ?? 1);
-        if ($nbOccupants < 1)
+        if ($nbOccupants < 1) {
             $nbOccupants = 1;
+        }
 
-        // --- 1. LOGEMENT ---
-        $consoBaseChauffage = (float) ($data['surface'] ?? 0) * 110;
-        $scoreLogementTotal = $consoBaseChauffage * (float) ($data['isolation_etat'] ?? 1) * (float) ($data['energie_principale'] ?? 0);
+        // Récupération des données
+        $surface = (float) ($data['surface'] ?? 0);
+        $isolation = (float) ($data['isolation_etat'] ?? 1);
+        $facteurEnergie = (float) ($data['energie_principale'] ?? 0.052);
 
+        // Calcul du chauffage
+        $consoKwhBase = $surface * 110;
+        $emissionsChauffage = ($consoKwhBase * $isolation * $facteurEnergie);
+
+        // On divise le chauffage par le nombre d'occupants
+        $scoreLogementTotal = $emissionsChauffage / $nbOccupants;
+
+        // On ajoute les autres postes
         $scoreLogementTotal += (float) ($data['eau_chaude'] ?? 0);
         $scoreLogementTotal += (float) ($data['cuisson'] ?? 0);
+        $scoreLogementTotal += ((float) ($data['clim_jours'] ?? 0) * 0.6);
         $scoreLogementTotal += (float) ($data['piscine'] ?? 0);
-        $scoreLogementTotal += (float) ($data['clim_jours'] ?? 0) * 0.6;
-
-        // DIVISION PAR OCCUPANT
-        $scoreLogement = $scoreLogementTotal / $nbOccupants;
 
         // --- 2. NUMÉRIQUE (Version Amortie) ---
         $fabrication_num = (
@@ -56,30 +63,50 @@ class BilanCarboneCalculatorService implements BilanCarboneCalculatorServiceInte
             ((int) ($data['qty_cafe'] ?? 0) * 40)
         ) * (float) ($data['electro_duree_vie'] ?? 1);
 
-        $conso_elec_moyenne = 150;
+        $hasElectro = (
+            (int) ($data['qty_refri'] ?? 0) + (int) ($data['qty_lave_linge'] ?? 0) // etc...
+        ) > 0;
+
+        $conso_elec_moyenne = $hasElectro ? 150 : 0;
         $scoreElectroTotal = $fabrication_electro + $conso_elec_moyenne + (float) ($data['recharge_gaz'] ?? 0);
 
         // DIVISION PAR OCCUPANT
         $scoreElectro = $scoreElectroTotal / $nbOccupants;
 
         // --- 4. ALIMENTATION (Correction Erreur x52) ---
-        $baseAlim = (float) ($data['regime_alimentaire'] ?? 2100);
+        $baseAlim = isset($data['regime_alimentaire']) && $data['regime_alimentaire'] != "0"
+            ? (float) $data['regime_alimentaire']
+            : 0;
         $scoreAlim = $baseAlim * (float) ($data['coeff_saison'] ?? 1) * (float) ($data['coeff_bio'] ?? 1) * (float) ($data['coeff_avion'] ?? 1);
 
         $scoreAlim += (float) ($data['frequence_viande_rouge'] ?? 0);
         $scoreAlim += (float) ($data['frequence_viande_blanche'] ?? 0);
         $scoreAlim += (float) ($data['laitiers'] ?? 0);
 
-        // --- 5. TRANSPORTS (Cohérence Annuelle) ---
-        $scoreTransports = (float) ($data['km_voiture'] ?? 0) * (float) ($data['vehicule_moteur'] ?? 0.2) * (float) ($data['vehicule_taille'] ?? 1) * (float) ($data['covoiturage'] ?? 1);
+        // --- 5. TRANSPORTS (Cohérence Annuelle en kg CO2) ---
+        $scoreTransports = 0;
+
+        $kmVoiture = (float) ($data['km_voiture'] ?? 0);
+        $coeffMoteur = (float) ($data['vehicule_moteur'] ?? 0);
+
+        if ($coeffMoteur > 0 && $kmVoiture > 0) {
+            $tailleVehicule = (float) ($data['vehicule_taille'] ?? 1);
+            $covoiturage = (float) ($data['covoiturage'] ?? 1);
+
+            $scoreTransports += ($kmVoiture * $coeffMoteur * $tailleVehicule * $covoiturage);
+        }
 
         $scoreTransports += ((float) ($data['km_train'] ?? 0) * 12 * 0.003);
-        $scoreTransports += ((float) ($data['trajets_bus'] ?? 0) * 52 * 0.1);
 
-        $scoreTransports += ((int) ($data['vol_court'] ?? 0) * 300);
-        $scoreTransports += ((int) ($data['vol_moyen'] ?? 0) * 800);
-        $scoreTransports += ((int) ($data['vol_long'] ?? 0) * 2000);
-        $scoreTransports += (float) ($data['mobilite_douce'] ?? 0) * 2000;
+        $scoreTransports += ((float) ($data['trajets_bus'] ?? 0) * 52 * 5 * 0.1);
+
+        $scoreTransports += ((int) ($data['vol_court'] ?? 0) * 250);
+        $scoreTransports += ((int) ($data['vol_moyen'] ?? 0) * 850);
+        $scoreTransports += ((int) ($data['vol_long'] ?? 0) * 2200);
+
+        if (($data['mobilite_douce'] ?? '') === "0.450") {
+            $scoreTransports += (1500 * 0.250);
+        }
 
         // --- 6. TEXTILE ---
         $scoreTextile = (
@@ -95,10 +122,10 @@ class BilanCarboneCalculatorService implements BilanCarboneCalculatorServiceInte
         $scoreTextile += (float) ($data['entretien_textile'] ?? 0);
 
         // --- TOTAL ---
-        $total = $scoreLogement + $scoreNumerique + $scoreElectro + $scoreAlim + $scoreTransports + $scoreTextile;
+        $total = $scoreLogementTotal + $scoreNumerique + $scoreElectro + $scoreAlim + $scoreTransports + $scoreTextile;
 
         return [
-            'logement' => round($scoreLogement, 2),
+            'logement' => round($scoreLogementTotal, 2),
             'numerique' => round($scoreNumerique, 2),
             'electromenager' => round($scoreElectro, 2),
             'alimentation' => round($scoreAlim, 2),

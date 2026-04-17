@@ -43,29 +43,29 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $created_at = null;
 
-    // Suppression en cascade pour le logement
     #[ORM\OneToOne(mappedBy: 'user', cascade: ['persist', 'remove'])]
     private ?Lodgment $lodgment = null;
 
-    /**
-     * Suppression en cascade pour les bilans carbone
-     */
     #[ORM\OneToMany(mappedBy: 'utilisateur', targetEntity: BilanCarbone::class, cascade: ['all'], orphanRemoval: true)]
     private Collection $bilansCarbone;
 
-    /**
-     * AJOUT CRUCIAL : Relation avec Consumption
-     * Le cascade: ['remove'] permet de supprimer automatiquement toutes les consommations 
-     * liées à cet utilisateur quand celui-ci est supprimé.
-     */
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Consumption::class, cascade: ['remove'])]
     private Collection $consumptions;
+
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: ArchiveBilanCarbone::class, cascade: ['remove'])]
+    private Collection $archiveBilanCarbones;
+
+    // AJOUT INDISPENSABLE : Relation pour débloquer la suppression
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: ArchiveConsumption::class, cascade: ['remove'])]
+    private Collection $archiveConsumptions;
 
     public function __construct()
     {
         $this->created_at = new \DateTime();
         $this->bilansCarbone = new ArrayCollection();
-        $this->consumptions = new ArrayCollection(); // Initialisation
+        $this->consumptions = new ArrayCollection();
+        $this->archiveBilanCarbones = new ArrayCollection();
+        $this->archiveConsumptions = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -77,7 +77,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         return $this->email;
     }
-
     public function setEmail(string $email): static
     {
         $this->email = $email;
@@ -95,7 +94,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $roles[] = 'ROLE_USER';
         return array_unique($roles);
     }
-
     public function setRoles(array $roles): static
     {
         $this->roles = $roles;
@@ -106,7 +104,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         return $this->password;
     }
-
     public function setPassword(string $password): static
     {
         $this->password = $password;
@@ -121,7 +118,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         return $this->nom;
     }
-
     public function setNom(string $nom): static
     {
         $this->nom = $nom;
@@ -132,7 +128,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         return $this->statut_pro;
     }
-
     public function setStatutPro(string $statut_pro): static
     {
         $this->statut_pro = $statut_pro;
@@ -143,7 +138,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         return $this->prenom;
     }
-
     public function setPrenom(?string $prenom): static
     {
         $this->prenom = $prenom;
@@ -154,7 +148,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         return $this->created_at;
     }
-
     public function setCreatedAt(\DateTimeInterface $created_at): static
     {
         $this->created_at = $created_at;
@@ -165,7 +158,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         return $this->lodgment;
     }
-
     public function setLodgment(?Lodgment $lodgment): static
     {
         if ($lodgment !== null && $lodgment->getUser() !== $this) {
@@ -175,9 +167,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    /**
-     * @return Collection<int, BilanCarbone>
-     */
+    /** @return Collection<int, BilanCarbone> */
     public function getBilansCarbone(): Collection
     {
         return $this->bilansCarbone;
@@ -193,11 +183,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         foreach ($this->bilansCarbone as $oldBilan) {
             $this->removeBilanCarbone($oldBilan);
         }
-
         if ($bilanCarbone !== null) {
             $this->addBilanCarbone($bilanCarbone);
         }
-
         return $this;
     }
 
@@ -220,9 +208,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    /**
-     * @return Collection<int, Consumption>
-     */
+    /** @return Collection<int, Consumption> */
     public function getConsumptions(): Collection
     {
         return $this->consumptions;
@@ -247,27 +233,24 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    /** @return Collection<int, ArchiveBilanCarbone> */
+    public function getArchiveBilanCarbones(): Collection
+    {
+        return $this->archiveBilanCarbones;
+    }
+
+    /** @return Collection<int, ArchiveConsumption> */
+    public function getArchiveConsumptions(): Collection
+    {
+        return $this->archiveConsumptions;
+    }
+
     public function addBilansCarbone(BilanCarbone $bilansCarbone): static
     {
-        if (!$this->bilansCarbone->contains($bilansCarbone)) {
-            $this->bilansCarbone->add($bilansCarbone);
-            $bilansCarbone->setUtilisateur($this);
-        }
-
-        return $this;
+        return $this->addBilanCarbone($bilansCarbone);
     }
-
     public function removeBilansCarbone(BilanCarbone $bilansCarbone): static
     {
-        if ($this->bilansCarbone->removeElement($bilansCarbone)) {
-            // set the owning side to null (unless already changed)
-            if ($bilansCarbone->getUtilisateur() === $this) {
-                $bilansCarbone->setUtilisateur(null);
-            }
-        }
-
-        return $this;
+        return $this->removeBilanCarbone($bilansCarbone);
     }
 }
-
-
